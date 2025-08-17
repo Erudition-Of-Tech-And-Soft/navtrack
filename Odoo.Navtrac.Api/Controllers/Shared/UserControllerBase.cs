@@ -3,11 +3,11 @@ using IdentityServer4;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Odoo.Navtrac.Api.Model.Account;
-using Odoo.Navtrac.Api.Model.Common;
-using Odoo.Navtrac.Api.Model.User;
-using Odoo.Navtrac.Api.Services.Requests;
-using Odoo.Navtrac.Api.Services.User;
+using Navtrack.Api.Model.Account;
+using Navtrack.Api.Model.Common;
+using Navtrack.Api.Model.User;
+using Navtrack.Api.Services.Requests;
+using Navtrack.Api.Services.User;
 
 namespace Odoo.Navtrac.Api.Controllers.Shared;
 

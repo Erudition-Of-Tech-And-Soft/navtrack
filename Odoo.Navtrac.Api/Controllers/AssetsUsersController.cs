@@ -8,7 +8,6 @@ using Navtrack.DataAccess.Model.Assets;
 using NSwag.Annotations;
 using Navtrack.Api.Services.Requests;
 using Navtrack.Api.Model.Assets;
-using System.Collections.Generic;
 using Navtrack.Api.Services.Common.ActionFilters;
 using Navtrack.Api.Services.Assets;
 using Navtrack.Api.Model.Common;

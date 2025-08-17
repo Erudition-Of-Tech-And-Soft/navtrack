@@ -11,12 +11,12 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Odoo.Navtrac.Api.Model.Common;
-using Odoo.Navtrac.Api.Services.Common.ActionFilters;
-using Odoo.Navtrac.Api.Services.Common.Context;
-using Odoo.Navtrac.Api.Services.Common.Exceptions;
-using Odoo.Navtrac.Api.Services.Common.IdentityServer;
-using Odoo.Navtrac.Api.Services.Common.Mappers;
+using Navtrack.Api.Model.Common;
+using Navtrack.Api.Services.Common.ActionFilters;
+using Navtrack.Api.Services.Common.Context;
+using Navtrack.Api.Services.Common.Exceptions;
+using Navtrack.Api.Services.Common.IdentityServer;
+using Navtrack.Api.Services.Common.Mappers;
 using Navtrack.DataAccess.Mongo;
 using Navtrack.Shared.Library.DI;
 

@@ -11,18 +11,18 @@ namespace Navtrack.Api.Controllers;
 [ApiController]
 public class AccountController(IRequestHandler requestHandler) : ControllerBase
 {
-    [HttpPost(ApiPaths.Account)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(Error), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult> CreateAccount([FromBody] CreateAccount model)
-    {
-        await requestHandler.Handle(new CreateAccountRequest
-        {
-            Model = model
-        });
+    //[HttpPost(ApiPaths.Account)]
+    //[ProducesResponseType(StatusCodes.Status200OK)]
+    //[ProducesResponseType(typeof(Error), StatusCodes.Status400BadRequest)]
+    //public async Task<ActionResult> CreateAccount([FromBody] CreateAccount model)
+    //{
+    //    await requestHandler.Handle(new CreateAccountRequest
+    //    {
+    //        Model = model
+    //    });
 
-        return Ok();
-    }
+    //    return Ok();
+    //}
 
     [HttpPost(ApiPaths.AccountForgotPassword)]
     [ProducesResponseType(StatusCodes.Status200OK)]

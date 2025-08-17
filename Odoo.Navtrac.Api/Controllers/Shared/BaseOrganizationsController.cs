@@ -3,12 +3,12 @@ using IdentityServer4;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Odoo.Navtrac.Api.Model.Common;
-using Odoo.Navtrac.Api.Model.Organizations;
-using Odoo.Navtrac.Api.Services.Common.ActionFilters;
-using Odoo.Navtrac.Api.Services.Common.Context;
-using Odoo.Navtrac.Api.Services.Organizations;
-using Odoo.Navtrac.Api.Services.Requests;
+using Navtrack.Api.Model.Common;
+using Navtrack.Api.Model.Organizations;
+using Navtrack.Api.Services.Common.ActionFilters;
+using Navtrack.Api.Services.Common.Context;
+using Navtrack.Api.Services.Organizations;
+using Navtrack.Api.Services.Requests;
 using Navtrack.DataAccess.Model.Organizations;
 using NSwag.Annotations;
 

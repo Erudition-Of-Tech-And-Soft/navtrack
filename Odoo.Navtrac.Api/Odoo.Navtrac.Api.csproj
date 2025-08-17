@@ -19,8 +19,5 @@
 		<ProjectReference Include="..\backend\Navtrack.Api.Services\Navtrack.Api.Services.csproj"/>
 	</ItemGroup>
 
-	<Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(Configuration)' == 'Debug'">
-		<Exec Command="$(NSwagExe_Net80) aspnetcore2openapi /nobuild:true /output:%22$(ProjectDir)../../api.json%22" WorkingDirectory="$(ProjectDir)"/>
-		<Exec Command="npm run generate" WorkingDirectory="../../frontend/shared"/>
-	</Target>
+
 </Project>

@@ -1,3 +1,5 @@
+using System;
+
 namespace Odoo.Navtrac.Api
 {
     public class WeatherForecast

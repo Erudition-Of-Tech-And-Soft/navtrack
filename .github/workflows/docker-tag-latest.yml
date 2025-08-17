@@ -29,9 +29,12 @@ jobs:
           docker pull ghcr.io/navtrack/web:${{ env.version }}
           docker pull ghcr.io/navtrack/api:${{ env.version }}
           docker pull ghcr.io/navtrack/listener:${{ env.version }}
+          docker pull ghcr.io/navtrack/odooapi:${{ env.version }}
           docker tag ghcr.io/navtrack/web:${{ env.version }} ghcr.io/navtrack/web:latest
           docker tag ghcr.io/navtrack/api:${{ env.version }} ghcr.io/navtrack/api:latest
+          docker tag ghcr.io/navtrack/odooapi:${{ env.version }} ghcr.io/navtrack/odooapi:latest
           docker tag ghcr.io/navtrack/listener:${{ env.version }} ghcr.io/navtrack/listener:latest
           docker push ghcr.io/navtrack/web -a
           docker push ghcr.io/navtrack/api -a
+          docker push ghcr.io/navtrack/odooapi -a
           docker push ghcr.io/navtrack/listener -a

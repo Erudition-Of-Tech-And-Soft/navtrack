@@ -4,12 +4,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Odoo.Navtrac.Api.Controllers.Shared;
-using Odoo.Navtrac.Api.Model.Trips;
-using Odoo.Navtrac.Api.Services.Common.ActionFilters;
-using Odoo.Navtrac.Api.Services.Requests;
-using Odoo.Navtrac.Api.Services.Trips;
 using Navtrack.DataAccess.Model.Assets;
 using NSwag.Annotations;
+using Navtrack.Api.Services.Requests;
+using Navtrack.Api.Model.Trips;
+using Navtrack.Api.Services.Common.ActionFilters;
+using Navtrack.Api.Services.Trips;
 
 namespace Odoo.Navtrac.Api.Controllers;
 

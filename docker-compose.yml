@@ -22,6 +22,17 @@ services:
       - "MongoOptions__Database=navtrack"
       - "MongoOptions__ConnectionString=mongodb://database"
 
+  odooapi:
+    image: ghcr.io/navtrack/odooapi:latest
+    networks:
+      - navtrack
+    ports:
+      - 3002:8082
+    restart: unless-stopped
+    environment:
+      - "MongoOptions__Database=navtrack"
+      - "MongoOptions__ConnectionString=mongodb://database"
+
   listener:
     image: ghcr.io/navtrack/listener:latest
     networks:
