@@ -23,7 +23,7 @@ services:
       - "MongoOptions__ConnectionString=mongodb://database"
 
   odooapi:
-    image: ghcr.io/navtrack/odooapi:latest
+    image: ghcr.io/navtrack/api:latest
     networks:
       - navtrack
     ports:
