@@ -9,6 +9,13 @@
     }
   },
   "profiles": {
+    "Navtrack.Apiodoo": {
+      "commandName": "Project",
+      "applicationUrl": "http://0.0.0.0:3002",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
     "http": {
       "commandName": "Project",
       "dotnetRunMessages": true,

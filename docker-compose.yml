@@ -4,10 +4,10 @@ services:
     networks:
       - navtrack
     ports:
-      - 3000:3000
+      - 3000:3001
     restart: unless-stopped
     environment:
-      - NAVTRACK_API_URL=http://localhost:3003
+      - NAVTRACK_API_URL=http://localhost:8080
       - NAVTRACK_LISTENER_HOSTNAME=your.hostname
       - NAVTRACK_LISTENER_IP=your.ip
 
@@ -16,7 +16,7 @@ services:
     networks:
       - navtrack
     ports:
-      - 3003:8080
+      - 3001:8080
     restart: unless-stopped
     environment:
       - "MongoOptions__Database=navtrack"
@@ -27,7 +27,7 @@ services:
     networks:
       - navtrack
     ports:
-      - 3002:8080
+      - 3002:8585
     restart: unless-stopped
     environment:
       - "MongoOptions__Database=navtrack"
@@ -38,7 +38,7 @@ services:
     networks:
       - navtrack
     ports:
-      - "7001-7100:7001-7100"
+      - "7002-7100:7002-7100"
     restart: unless-stopped
     environment:
       - "MongoOptions__Database=navtrack"
