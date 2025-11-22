@@ -517,6 +517,14 @@ copy_project_files() {
     # Create installation directory
     mkdir -p "$INSTALL_DIR"
 
+    # Copy Directory.Build.props (CRITICAL - defines TargetFramework for .NET projects)
+    print_info "Copying Directory.Build.props..."
+    if [ -f "$SCRIPT_DIR/Directory.Build.props" ]; then
+        cp "$SCRIPT_DIR/Directory.Build.props" "$INSTALL_DIR/" || print_error "Failed to copy Directory.Build.props"
+    else
+        print_error "Directory.Build.props not found in $SCRIPT_DIR - .NET builds will fail!"
+    fi
+
     # Copy necessary files
     print_info "Copying backend files..."
     cp -r "$SCRIPT_DIR/backend" "$INSTALL_DIR/" 2>/dev/null || print_error "Backend directory not found in $SCRIPT_DIR"
