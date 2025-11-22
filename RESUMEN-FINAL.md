@@ -46,22 +46,47 @@ RUN dotnet publish "Odoo.Navtrac.Api/Odoo.Navtrac.Api.csproj" -c Release -o /app
 
 ---
 
-### 4. Listener Tests Durante Build ✅
+### 4. TargetFramework No Encontrado (.NET Projects) ✅
+**Archivos**: Todos los Dockerfiles de .NET
+**Problema**: `NETSDK1013: The TargetFramework value '' was not recognized`
+**Causa**: Los `.csproj` dependen de `Directory.Build.props` que define `TargetFramework=net9.0`
+**Solución**: Copiar explícitamente `Directory.Build.props` primero en todos los Dockerfiles
+
+```dockerfile
+# Copy Directory.Build.props first (defines TargetFramework)
+COPY Directory.Build.props ./
+
+# Copy backend projects
+COPY backend/ ./backend/
+
+# Now dotnet can find TargetFramework
+RUN dotnet publish "backend/Navtrack.Api/Navtrack.Api.csproj" -c Release -o /app
+```
+
+**Archivos modificados**:
+- `backend/Navtrack.Api/Dockerfile`
+- `backend/Navtrack.Listener/Dockerfile`
+- `Odoo.Navtrac.Api/Dockerfile`
+
+Ver [SOLUCION-TARGETFRAMEWORK.md](SOLUCION-TARGETFRAMEWORK.md) para detalles completos.
+
+---
+
+### 5. Listener Tests Durante Build ✅
 **Archivo**: `backend/Navtrack.Listener/Dockerfile`
-**Problema**: Tests fallaban por configuración de `TargetFramework`
+**Problema**: Tests fallaban durante build
 **Solución**: Tests deshabilitados en build de producción
 
 ```dockerfile
 # Tests disabled for production build - run in CI/CD instead
 # RUN dotnet test "backend/Navtrack.Listener.Tests/..."
-RUN dotnet publish "backend/Navtrack.Listener/Navtrack.Listener.csproj" -c Release -o /app
 ```
 
 **Razón**: Los tests deben ejecutarse en el pipeline CI/CD, no durante el deployment
 
 ---
 
-### 5. Line Endings Windows → Unix ✅
+### 6. Line Endings Windows → Unix ✅
 **Archivos**: Scripts `.sh`
 **Problema**: Scripts tienen CRLF (Windows)
 **Solución**: Ejecutar `dos2unix *.sh`
@@ -82,9 +107,11 @@ chmod +x *.sh
 |---------|--------|--------|
 | `install-navtrack.sh` | Contextos Docker corregidos | ✅ |
 | `frontend/Dockerfile` | Rutas de copia corregidas | ✅ |
-| `Odoo.Navtrac.Api/Dockerfile` | Ruta de proyecto corregida | ✅ |
-| `backend/Navtrack.Listener/Dockerfile` | Tests deshabilitados | ✅ |
+| `backend/Navtrack.Api/Dockerfile` | **Directory.Build.props copiado** | ✅ |
+| `backend/Navtrack.Listener/Dockerfile` | **Directory.Build.props + tests deshabilitados** | ✅ |
+| `Odoo.Navtrac.Api/Dockerfile` | **Directory.Build.props copiado** | ✅ |
 | `.gitattributes` | Forzar LF en scripts | ✅ |
+| `SOLUCION-TARGETFRAMEWORK.md` | **Documentación TargetFramework (NUEVO)** | ✅ |
 | `CAMBIOS-ULTIMOS.md` | Documentación actualizada | ✅ |
 | `RESUMEN-FINAL.md` | Resumen actualizado | ✅ |
 
@@ -94,20 +121,21 @@ chmod +x *.sh
 
 ```
 /opt/navtrack/                    # ← Contexto raíz para Docker
+├── Directory.Build.props         # ⭐ Define TargetFramework=net9.0
 ├── backend/
 │   ├── Navtrack.Api/             # Backend API
-│   │   └── Dockerfile            # ✅ Correcto
+│   │   └── Dockerfile            # ✅ Copia Directory.Build.props
 │   └── Navtrack.Listener/        # GPS Listener
-│       └── Dockerfile            # ✅ Correcto
+│       └── Dockerfile            # ✅ Copia Directory.Build.props
 ├── frontend/                     # Frontend
 │   ├── web/                      # Código React
 │   ├── shared/                   # Código compartido
 │   ├── package.json
 │   ├── run_web.sh
-│   └── Dockerfile                # ✅ Corregido
+│   └── Dockerfile                # ✅ Copia desde frontend/
 ├── Odoo.Navtrac.Api/             # ← En raíz, NO en backend/
-│   └── Dockerfile                # ✅ Corregido
-└── docker-compose.prod.yml       # ✅ Correcto
+│   └── Dockerfile                # ✅ Copia Directory.Build.props
+└── docker-compose.prod.yml       # ✅ Todos usan context: .
 ```
 
 ---
@@ -132,9 +160,9 @@ sudo ./install-navtrack.sh
 | Componente | Estado Build | Notas |
 |------------|-------------|-------|
 | Frontend (React) | ✅ Listo | Dockerfile corregido |
-| Backend API (.NET) | ✅ Listo | Contexto corregido |
-| Odoo API (.NET) | ✅ Listo | Ruta corregida |
-| GPS Listener (.NET) | ✅ Listo | Tests deshabilitados, build OK |
+| Backend API (.NET) | ✅ Listo | **Directory.Build.props copiado** |
+| Odoo API (.NET) | ✅ Listo | **Directory.Build.props copiado** |
+| GPS Listener (.NET) | ✅ Listo | **Directory.Build.props + tests off** |
 | MongoDB | ✅ Listo | Imagen oficial |
 | Nginx | ✅ Listo | Reverse proxy |
 | SSL/TLS | ✅ Listo | Let's Encrypt |
