@@ -10,7 +10,20 @@
    - **Solución**: Todos los servicios ahora usan `context: .` (raíz del proyecto)
    - **Archivo modificado**: `install-navtrack.sh` (función `create_docker_compose`)
 
-2. **Line Endings Windows → Linux** ✅ DOCUMENTADO
+2. **Frontend Dockerfile Context** ✅ CORREGIDO
+   - **Problema**: Dockerfile del frontend no encontraba archivos cuando el contexto es raíz
+   - **Error**: `"/run_web.sh": not found`
+   - **Solución**: Actualizado Dockerfile para copiar desde `frontend/` explícitamente
+   - **Archivo modificado**: `frontend/Dockerfile`
+   - **Cambios realizados**:
+     ```dockerfile
+     COPY frontend/package*.json ./
+     COPY frontend/web ./web
+     COPY frontend/shared ./shared
+     COPY frontend/run_web.sh /run_web.sh
+     ```
+
+3. **Line Endings Windows → Linux** ✅ DOCUMENTADO
    - **Problema**: Scripts tienen CRLF (Windows) en lugar de LF (Unix)
    - **Error**: `-bash: /bin/bash^M: bad interpreter`
    - **Solución**: Ejecutar `dos2unix *.sh` antes de los scripts
