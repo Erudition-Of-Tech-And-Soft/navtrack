@@ -254,30 +254,7 @@ server {
         root /var/www/html;
     }
 
-    location / {
-        return 301 https://\$server_name\$request_uri;
-    }
-}
-
-server {
-    listen 443 ssl http2;
-    listen [::]:443 ssl http2;
-    server_name ${DOMAIN_FRONTEND};
-
-    # SSL configuration will be added by Certbot
-
-    # Security headers
-    add_header X-Frame-Options "SAMEORIGIN" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header X-XSS-Protection "1; mode=block" always;
-    add_header Referrer-Policy "no-referrer-when-downgrade" always;
-
-    # Gzip compression
-    gzip on;
-    gzip_vary on;
-    gzip_min_length 1024;
-    gzip_types text/plain text/css text/xml text/javascript application/x-javascript application/xml+rss application/json application/javascript;
-
+    # Proxy to application (Certbot will add HTTPS redirect later)
     location / {
         proxy_pass http://127.0.0.1:3000;
         proxy_http_version 1.1;
@@ -309,25 +286,9 @@ server {
         root /var/www/html;
     }
 
-    location / {
-        return 301 https://\$server_name\$request_uri;
-    }
-}
-
-server {
-    listen 443 ssl http2;
-    listen [::]:443 ssl http2;
-    server_name ${DOMAIN_API};
-
-    # SSL configuration will be added by Certbot
-
-    # Security headers
-    add_header X-Frame-Options "SAMEORIGIN" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header X-XSS-Protection "1; mode=block" always;
-
     client_max_body_size 10M;
 
+    # Proxy to application (Certbot will add HTTPS redirect later)
     location / {
         proxy_pass http://127.0.0.1:8080;
         proxy_http_version 1.1;
@@ -361,25 +322,9 @@ server {
         root /var/www/html;
     }
 
-    location / {
-        return 301 https://\$server_name\$request_uri;
-    }
-}
-
-server {
-    listen 443 ssl http2;
-    listen [::]:443 ssl http2;
-    server_name ${DOMAIN_ODOO_API};
-
-    # SSL configuration will be added by Certbot
-
-    # Security headers
-    add_header X-Frame-Options "SAMEORIGIN" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header X-XSS-Protection "1; mode=block" always;
-
     client_max_body_size 10M;
 
+    # Proxy to application (Certbot will add HTTPS redirect later)
     location / {
         proxy_pass http://127.0.0.1:8081;
         proxy_http_version 1.1;
@@ -416,18 +361,7 @@ server {
         root /var/www/html;
     }
 
-    location / {
-        return 301 https://\$server_name\$request_uri;
-    }
-}
-
-server {
-    listen 443 ssl http2;
-    listen [::]:443 ssl http2;
-    server_name ${DOMAIN_LISTENER};
-
-    # SSL configuration will be added by Certbot
-
+    # Info page (Certbot will add HTTPS redirect later)
     location / {
         return 200 'NavTrack GPS Listener Service\nGPS devices should connect directly to ports ${LISTENER_PORT_START}-${LISTENER_PORT_END}\n';
         add_header Content-Type text/plain;
