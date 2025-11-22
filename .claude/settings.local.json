@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Read(//c/Users/edgar/PycharmProjects/Gps/**)"
+      "Read(//c/Users/edgar/PycharmProjects/Gps/**)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []
