@@ -23,7 +23,18 @@
      COPY frontend/run_web.sh /run_web.sh
      ```
 
-3. **Line Endings Windows → Linux** ✅ DOCUMENTADO
+3. **Odoo API Dockerfile Path** ✅ CORREGIDO
+   - **Problema**: Dockerfile buscaba en `backend/Odoo.Navtrac.Api/` pero está en raíz
+   - **Error**: `MSBUILD : error MSB1009: Project file does not exist`
+   - **Solución**: Corregida ruta de `backend/Odoo.Navtrac.Api/` a `Odoo.Navtrac.Api/`
+   - **Archivo modificado**: `Odoo.Navtrac.Api/Dockerfile`
+   - **Cambio**:
+     ```dockerfile
+     # Antes: RUN dotnet publish "backend/Odoo.Navtrac.Api/Odoo.Navtrac.Api.csproj"
+     # Ahora:  RUN dotnet publish "Odoo.Navtrac.Api/Odoo.Navtrac.Api.csproj"
+     ```
+
+4. **Line Endings Windows → Linux** ✅ DOCUMENTADO
    - **Problema**: Scripts tienen CRLF (Windows) en lugar de LF (Unix)
    - **Error**: `-bash: /bin/bash^M: bad interpreter`
    - **Solución**: Ejecutar `dos2unix *.sh` antes de los scripts
