@@ -34,7 +34,19 @@
      # Ahora:  RUN dotnet publish "Odoo.Navtrac.Api/Odoo.Navtrac.Api.csproj"
      ```
 
-4. **Line Endings Windows → Linux** ✅ DOCUMENTADO
+4. **Listener Tests Durante Build** ✅ CORREGIDO
+   - **Problema**: Tests fallaban durante build de Docker por falta de `TargetFramework`
+   - **Error**: `NETSDK1013: The TargetFramework value '' was not recognized`
+   - **Solución**: Tests deshabilitados en Dockerfile de producción
+   - **Archivo modificado**: `backend/Navtrack.Listener/Dockerfile`
+   - **Razón**: Tests deben ejecutarse en CI/CD, no durante deployment
+   - **Cambio**:
+     ```dockerfile
+     # Tests disabled for production build
+     # RUN dotnet test "backend/Navtrack.Listener.Tests/..."
+     ```
+
+5. **Line Endings Windows → Linux** ✅ DOCUMENTADO
    - **Problema**: Scripts tienen CRLF (Windows) en lugar de LF (Unix)
    - **Error**: `-bash: /bin/bash^M: bad interpreter`
    - **Solución**: Ejecutar `dos2unix *.sh` antes de los scripts

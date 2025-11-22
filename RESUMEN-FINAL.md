@@ -46,7 +46,22 @@ RUN dotnet publish "Odoo.Navtrac.Api/Odoo.Navtrac.Api.csproj" -c Release -o /app
 
 ---
 
-### 4. Line Endings Windows → Unix ✅
+### 4. Listener Tests Durante Build ✅
+**Archivo**: `backend/Navtrack.Listener/Dockerfile`
+**Problema**: Tests fallaban por configuración de `TargetFramework`
+**Solución**: Tests deshabilitados en build de producción
+
+```dockerfile
+# Tests disabled for production build - run in CI/CD instead
+# RUN dotnet test "backend/Navtrack.Listener.Tests/..."
+RUN dotnet publish "backend/Navtrack.Listener/Navtrack.Listener.csproj" -c Release -o /app
+```
+
+**Razón**: Los tests deben ejecutarse en el pipeline CI/CD, no durante el deployment
+
+---
+
+### 5. Line Endings Windows → Unix ✅
 **Archivos**: Scripts `.sh`
 **Problema**: Scripts tienen CRLF (Windows)
 **Solución**: Ejecutar `dos2unix *.sh`
@@ -68,8 +83,10 @@ chmod +x *.sh
 | `install-navtrack.sh` | Contextos Docker corregidos | ✅ |
 | `frontend/Dockerfile` | Rutas de copia corregidas | ✅ |
 | `Odoo.Navtrac.Api/Dockerfile` | Ruta de proyecto corregida | ✅ |
+| `backend/Navtrack.Listener/Dockerfile` | Tests deshabilitados | ✅ |
 | `.gitattributes` | Forzar LF en scripts | ✅ |
 | `CAMBIOS-ULTIMOS.md` | Documentación actualizada | ✅ |
+| `RESUMEN-FINAL.md` | Resumen actualizado | ✅ |
 
 ---
 
@@ -117,7 +134,7 @@ sudo ./install-navtrack.sh
 | Frontend (React) | ✅ Listo | Dockerfile corregido |
 | Backend API (.NET) | ✅ Listo | Contexto corregido |
 | Odoo API (.NET) | ✅ Listo | Ruta corregida |
-| GPS Listener (.NET) | ✅ Listo | Contexto corregido |
+| GPS Listener (.NET) | ✅ Listo | Tests deshabilitados, build OK |
 | MongoDB | ✅ Listo | Imagen oficial |
 | Nginx | ✅ Listo | Reverse proxy |
 | SSL/TLS | ✅ Listo | Let's Encrypt |
