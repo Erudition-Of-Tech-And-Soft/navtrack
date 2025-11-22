@@ -1,0 +1,188 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                         NAVTRACK - INSTALACIÓN LINUX                         ║
+║                              LEER PRIMERO                                    ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+⚠️  IMPORTANTE: ESTOS ARCHIVOS FUERON CREADOS EN WINDOWS
+⚠️  DEBES CORREGIR LOS "LINE ENDINGS" ANTES DE EJECUTAR CUALQUIER SCRIPT
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🚀 INSTALACIÓN RÁPIDA (3 PASOS)
+═══════════════════════════════════════════════════════════════════════════════
+
+En tu servidor Linux, ejecuta estos comandos:
+
+
+PASO 1: Clonar repositorio
+───────────────────────────
+
+git clone <url-repositorio> /tmp/navtrack
+cd /tmp/navtrack
+
+
+PASO 2: Corregir archivos (OBLIGATORIO - NO OMITIR)
+────────────────────────────────────────────────────
+
+sudo apt-get update
+sudo apt-get install -y dos2unix
+dos2unix *.sh
+chmod +x *.sh
+
+
+PASO 3: Instalar
+────────────────
+
+sudo ./install-navtrack.sh
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📋 ANTES DE INSTALAR - VERIFICAR
+═══════════════════════════════════════════════════════════════════════════════
+
+✓ DNS configurado apuntando a tu servidor:
+  - gps-qa.inversionespereztaveras.com
+  - gps-api-qa.inversionespereztaveras.com
+  - gps-odoo-qa.inversionespereztaveras.com
+  - gps-listener-qa.inversionespereztaveras.com
+
+✓ Puertos abiertos: 22, 80, 443, 7002-7100
+
+✓ Servidor Linux: Ubuntu 20.04+ o Debian 10+
+
+✓ Recursos: 4GB RAM mínimo, 20GB disco
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+❓ ¿POR QUÉ NECESITO EJECUTAR dos2unix?
+═══════════════════════════════════════════════════════════════════════════════
+
+Los archivos fueron creados en Windows y tienen terminaciones de línea Windows
+(CRLF = \r\n) pero Linux necesita terminaciones Unix (LF = \n).
+
+Si no ejecutas dos2unix, verás errores como:
+  -bash: /bin/bash^M: bad interpreter: No such file or directory
+
+La solución es simple: ejecuta "dos2unix *.sh" ANTES de ejecutar los scripts.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🔧 POST-INSTALACIÓN
+═══════════════════════════════════════════════════════════════════════════════
+
+Después de la instalación, copia el script de gestión:
+
+sudo cp navtrack-manage.sh /usr/local/bin/navtrack
+sudo chmod +x /usr/local/bin/navtrack
+
+Luego verifica el estado:
+
+navtrack status
+navtrack health
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🌐 ACCESO A LAS APLICACIONES
+═══════════════════════════════════════════════════════════════════════════════
+
+Frontend:    https://gps-qa.inversionespereztaveras.com
+Backend API: https://gps-api-qa.inversionespereztaveras.com
+Odoo API:    https://gps-odoo-qa.inversionespereztaveras.com
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📱 CONFIGURAR DISPOSITIVOS GPS
+═══════════════════════════════════════════════════════════════════════════════
+
+Servidor: gps-listener-qa.inversionespereztaveras.com
+Puerto: Depende del protocolo (ver GPS-PORTS.md)
+
+Protocolos comunes:
+- Teltonika: 7002
+- Coban: 7007
+- Concox: 7013
+- Queclink: 7008
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🆘 SOLUCIÓN DE PROBLEMAS
+═══════════════════════════════════════════════════════════════════════════════
+
+Error "bad interpreter":
+    cd /tmp/navtrack
+    sudo apt-get install -y dos2unix
+    dos2unix *.sh
+    chmod +x *.sh
+
+Ver logs:
+    navtrack logs
+
+Diagnóstico completo:
+    sudo bash troubleshoot.sh
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📚 DOCUMENTACIÓN
+═══════════════════════════════════════════════════════════════════════════════
+
+INSTALACION.md              - Guía de instalación completa
+DEPLOYMENT.md               - Guía de operación diaria
+GPS-PORTS.md                - Puertos y protocolos GPS
+FIX-WINDOWS-ISSUE.md        - Solución detallada line endings
+INSTALLATION-CHECKLIST.md   - Checklist completo
+QUICK-START.txt             - Referencia rápida
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+⏱  TIEMPO ESTIMADO
+═══════════════════════════════════════════════════════════════════════════════
+
+Corrección de archivos:  2 minutos
+Instalación:            10-15 minutos
+TOTAL:                  15-20 minutos
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ RESUMEN DE COMANDOS
+═══════════════════════════════════════════════════════════════════════════════
+
+# Instalación completa
+git clone <url-repo> /tmp/navtrack
+cd /tmp/navtrack
+sudo apt-get install -y dos2unix
+dos2unix *.sh
+chmod +x *.sh
+sudo ./install-navtrack.sh
+
+# Post-instalación
+sudo cp navtrack-manage.sh /usr/local/bin/navtrack
+navtrack status
+
+# Comandos útiles
+navtrack help               # Ver ayuda
+navtrack status             # Ver estado
+navtrack logs               # Ver logs
+navtrack restart            # Reiniciar
+navtrack backup             # Crear backup
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🎉 ¡LISTO!
+═══════════════════════════════════════════════════════════════════════════════
+
+Una vez instalado, accede al frontend y comienza a configurar tus dispositivos.
+
+Para más información, consulta INSTALACION.md o DEPLOYMENT.md
+
+
+═══════════════════════════════════════════════════════════════════════════════

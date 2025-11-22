@@ -1,0 +1,51 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Shell scripts must always use LF (Unix line endings)
+*.sh text eol=lf
+
+# Markdown files
+*.md text eol=lf
+
+# YAML files
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# JSON files
+*.json text eol=lf
+
+# Environment files
+.env* text eol=lf
+
+# Configuration files
+*.conf text eol=lf
+*.config text eol=lf
+
+# Dockerfile
+Dockerfile text eol=lf
+*.dockerfile text eol=lf
+
+# Docker Compose
+docker-compose*.yml text eol=lf
+
+# Git files
+.gitattributes text eol=lf
+.gitignore text eol=lf
+
+# Windows-specific files should use CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.tar.gz binary
+*.exe binary
+*.dll binary
+*.so binary

@@ -1,0 +1,114 @@
+================================================================================
+NavTrack - Instalación Rápida para Linux
+================================================================================
+
+IMPORTANTE: Los archivos tienen line endings de Windows.
+Debes corregirlos ANTES de ejecutar cualquier script.
+
+================================================================================
+MÉTODO 1: Instalación en 3 Comandos (RECOMENDADO)
+================================================================================
+
+1. Clonar repositorio:
+
+git clone <url-repositorio> /tmp/navtrack && cd /tmp/navtrack
+
+
+2. Corregir line endings y dar permisos:
+
+sudo apt-get update && sudo apt-get install -y dos2unix && dos2unix *.sh && chmod +x *.sh
+
+
+3. Ejecutar instalación:
+
+sudo ./install-navtrack.sh
+
+
+================================================================================
+MÉTODO 2: Todo en Una Línea
+================================================================================
+
+git clone <url-repo> /tmp/navtrack && cd /tmp/navtrack && sudo apt-get update && sudo apt-get install -y dos2unix && dos2unix *.sh && chmod +x *.sh && sudo ./install-navtrack.sh
+
+
+================================================================================
+MÉTODO 3: Si dos2unix no funciona
+================================================================================
+
+cd /tmp/navtrack
+for f in *.sh; do sed -i 's/\r$//' "$f"; chmod +x "$f"; done
+sudo ./install-navtrack.sh
+
+
+================================================================================
+VERIFICAR ANTES DE INSTALAR
+================================================================================
+
+1. DNS configurado:
+   - gps-qa.inversionespereztaveras.com
+   - gps-api-qa.inversionespereztaveras.com
+   - gps-odoo-qa.inversionespereztaveras.com
+   - gps-listener-qa.inversionespereztaveras.com
+
+2. Puertos abiertos: 22, 80, 443, 7002-7100
+
+3. Recursos: 4GB RAM, 20GB disco
+
+
+================================================================================
+POST-INSTALACIÓN
+================================================================================
+
+Copiar script de gestión:
+
+sudo cp /tmp/navtrack/navtrack-manage.sh /usr/local/bin/navtrack && sudo chmod +x /usr/local/bin/navtrack
+
+
+Verificar servicios:
+
+navtrack status
+navtrack health
+navtrack logs
+
+
+================================================================================
+ACCESO
+================================================================================
+
+Frontend:    https://gps-qa.inversionespereztaveras.com
+API:         https://gps-api-qa.inversionespereztaveras.com
+Odoo API:    https://gps-odoo-qa.inversionespereztaveras.com
+GPS Devices: gps-listener-qa.inversionespereztaveras.com (ports 7002-7100)
+
+
+================================================================================
+SOLUCIÓN DE PROBLEMAS
+================================================================================
+
+Error "bad interpreter":
+    sudo apt-get install -y dos2unix && dos2unix *.sh && chmod +x *.sh
+
+Ver logs:
+    navtrack logs
+
+Diagnóstico:
+    cd /tmp/navtrack && sudo bash troubleshoot.sh
+
+Ver documentación completa:
+    cat INSTALACION.md
+
+
+================================================================================
+COMANDOS ÚTILES POST-INSTALACIÓN
+================================================================================
+
+navtrack status          # Ver estado de servicios
+navtrack logs            # Ver logs
+navtrack logs listener   # Ver logs del GPS listener
+navtrack restart         # Reiniciar servicios
+navtrack backup          # Crear backup
+navtrack health          # Verificar salud del sistema
+navtrack help            # Ver todos los comandos
+
+
+================================================================================
