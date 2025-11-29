@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
 using Navtrack.DataAccess.Model.Devices.Messages;
 using Navtrack.Listener.Models;
@@ -17,7 +18,7 @@ namespace Navtrack.Listener.Protocols.W2j;
 [Service(typeof(ICustomMessageHandler<W2jProtocol>))]
 public class W2jMessageHandler : BaseMessageHandler<W2jProtocol>
 {
-    public override DeviceMessageDocument Parse(MessageInput input)
+    public override IEnumerable<DeviceMessageDocument>? ParseRange(MessageInput input)
     {
         // Verificar longitud mínima (sin los delimitadores 0x7E)
         // MsgID(2) + MsgBodyAttr(2) + DeviceID(6) + SeqNum(2) + Checksum(1) = 13 bytes mínimo
@@ -54,7 +55,7 @@ public class W2jMessageHandler : BaseMessageHandler<W2jProtocol>
         }
 
         // Procesar según tipo de mensaje
-        return messageId switch
+        DeviceMessageDocument? message = messageId switch
         {
             MessageType.TerminalRegistration => HandleRegistration(input, deviceId, sequenceNumber, messageBody),
             MessageType.TerminalAuthentication => HandleAuthentication(input, deviceId, sequenceNumber),
@@ -63,6 +64,8 @@ public class W2jMessageHandler : BaseMessageHandler<W2jProtocol>
             MessageType.BatchLocationReport => HandleBatchLocationReport(input, deviceId, sequenceNumber, messageBody),
             _ => HandleUnknownMessage(input, deviceId, messageId)
         };
+
+        return message != null ? new[] { message } : null;
     }
 
     /// <summary>
@@ -72,6 +75,8 @@ public class W2jMessageHandler : BaseMessageHandler<W2jProtocol>
     /// </summary>
     private DeviceMessageDocument? HandleRegistration(MessageInput input, string deviceId, ushort sequenceNumber, byte[] body)
     {
+        input.ConnectionContext.SetDevice(deviceId);
+
         // Enviar respuesta de registro exitoso
         byte[] response = BuildRegistrationResponse(deviceId, sequenceNumber, 0, "OK");
         input.NetworkStream.Write(response);
@@ -93,9 +98,8 @@ public class W2jMessageHandler : BaseMessageHandler<W2jProtocol>
             }
         }
 
-        input.ConnectionContext.SetDevice(deviceId);
-
-        return new DeviceMessageDocument();
+        // No retornar mensaje sin datos de posición
+        return null;
     }
 
     /// <summary>
@@ -103,13 +107,14 @@ public class W2jMessageHandler : BaseMessageHandler<W2jProtocol>
     /// </summary>
     private DeviceMessageDocument? HandleAuthentication(MessageInput input, string deviceId, ushort sequenceNumber)
     {
+        input.ConnectionContext.SetDevice(deviceId);
+
         // Enviar respuesta genérica de éxito
         byte[] response = BuildGeneralResponse(deviceId, sequenceNumber, MessageType.TerminalAuthentication, 0);
         input.NetworkStream.Write(response);
 
-        input.ConnectionContext.SetDevice(deviceId);
-
-        return new DeviceMessageDocument();
+        // No retornar mensaje sin datos de posición
+        return null;
     }
 
     /// <summary>
@@ -117,13 +122,14 @@ public class W2jMessageHandler : BaseMessageHandler<W2jProtocol>
     /// </summary>
     private DeviceMessageDocument? HandleHeartbeat(MessageInput input, string deviceId, ushort sequenceNumber)
     {
+        input.ConnectionContext.SetDevice(deviceId);
+
         // Enviar respuesta de heartbeat
         byte[] response = BuildGeneralResponse(deviceId, sequenceNumber, MessageType.TerminalHeartbeat, 0);
         input.NetworkStream.Write(response);
 
-        input.ConnectionContext.SetDevice(deviceId);
-
-        return new DeviceMessageDocument();
+        // No retornar mensaje sin datos de posición
+        return null;
     }
 
     /// <summary>
@@ -137,6 +143,8 @@ public class W2jMessageHandler : BaseMessageHandler<W2jProtocol>
         {
             return null;
         }
+
+        input.ConnectionContext.SetDevice(deviceId);
 
         // Enviar respuesta
         byte[] response = BuildGeneralResponse(deviceId, sequenceNumber, MessageType.LocationReport, 0);
@@ -175,8 +183,6 @@ public class W2jMessageHandler : BaseMessageHandler<W2jProtocol>
         // Verificar si tiene GPS válido
         bool hasGps = (status & 0x02) != 0;
 
-        input.ConnectionContext.SetDevice(deviceId);
-
         return new DeviceMessageDocument
         {
             Position = new PositionElement
@@ -197,13 +203,14 @@ public class W2jMessageHandler : BaseMessageHandler<W2jProtocol>
     /// </summary>
     private DeviceMessageDocument? HandleBatchLocationReport(MessageInput input, string deviceId, ushort sequenceNumber, byte[] body)
     {
+        input.ConnectionContext.SetDevice(deviceId);
+
         // Por ahora solo respondemos, la implementación completa requeriría devolver múltiples entidades
         byte[] response = BuildGeneralResponse(deviceId, sequenceNumber, MessageType.BatchLocationReport, 0);
         input.NetworkStream.Write(response);
 
-        input.ConnectionContext.SetDevice(deviceId);
-
-        return new DeviceMessageDocument();
+        // No retornar mensaje sin implementación completa
+        return null;
     }
 
     /// <summary>
@@ -213,20 +220,29 @@ public class W2jMessageHandler : BaseMessageHandler<W2jProtocol>
     {
         input.ConnectionContext.SetDevice(deviceId);
 
-        return new DeviceMessageDocument();
+        // No retornar mensaje para tipos desconocidos
+        return null;
     }
 
     #region Utilidades de parsing
 
     /// <summary>
     /// Extrae el Device ID de 6 bytes BCD
+    /// En JT/T 808, el Device ID es BCD (Binary Coded Decimal)
+    /// Cada byte representa 2 dígitos decimales
+    /// Ejemplo: 0x01 0x84 0x04 0x22 0x83 0x23 → "18404228323" (sin leading zeros)
     /// </summary>
     private string GetDeviceId(byte[] data, int offset)
     {
         StringBuilder sb = new StringBuilder(12);
         for (int i = 0; i < 6; i++)
         {
-            sb.AppendFormat("{0:X2}", data[offset + i]);
+            // Convertir byte BCD a 2 dígitos decimales
+            byte bcd = data[offset + i];
+            int high = (bcd >> 4) & 0x0F;  // Nibble alto
+            int low = bcd & 0x0F;           // Nibble bajo
+            sb.Append(high);
+            sb.Append(low);
         }
         return sb.ToString().TrimStart('0');
     }
@@ -450,7 +466,8 @@ public class W2jMessageHandler : BaseMessageHandler<W2jProtocol>
     }
 
     /// <summary>
-    /// Convierte Device ID string a bytes
+    /// Convierte Device ID string a bytes BCD
+    /// Ejemplo: "18404228323" → PadLeft → "018404228323" → BCD bytes: 01 84 04 22 83 23
     /// </summary>
     private byte[] ParseDeviceIdToBytes(string deviceId)
     {
@@ -459,8 +476,13 @@ public class W2jMessageHandler : BaseMessageHandler<W2jProtocol>
 
         for (int i = 0; i < 6; i++)
         {
-            string hex = deviceId.Substring(i * 2, 2);
-            result[i] = Convert.ToByte(hex, 16);
+            // Obtener 2 dígitos decimales
+            string digits = deviceId.Substring(i * 2, 2);
+            int value = int.Parse(digits);
+
+            // Convertir a BCD: cada dígito va en un nibble
+            byte bcd = (byte)(((value / 10) << 4) | (value % 10));
+            result[i] = bcd;
         }
 
         return result;

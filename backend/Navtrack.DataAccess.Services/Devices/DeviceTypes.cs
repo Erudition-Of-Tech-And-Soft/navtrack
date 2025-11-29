@@ -1248,5 +1248,8 @@ public static class DeviceTypes
 1256;ATrack;AX9;atrack;7061
 1257;ATrack;AY5;atrack;7061
 1258;ATrack;AY5i;atrack;7061
+1259;W2j;W2j-4G;w2j;7053
+1260;W2j;JT808-4G;w2j;7053
+1261;W2j;JT808-Tracker;w2j;7053
 ";
 }

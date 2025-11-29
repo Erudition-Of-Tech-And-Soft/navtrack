@@ -4,7 +4,18 @@
       "Read(//c/Users/edgar/PycharmProjects/Gps/**)",
       "Bash(git add:*)",
       "Bash(dotnet build:*)",
-      "Bash(sort:*)"
+      "Bash(sort:*)",
+      "Bash(mongosh:*)",
+      "Bash(mongo:*)",
+      "Bash(dotnet script:*)",
+      "Bash(dotnet new console:*)",
+      "Bash(dotnet add package:*)",
+      "Bash(dotnet run)",
+      "Bash(dotnet run:*)",
+      "Bash(pip install openpyxl)",
+      "Bash(python:*)",
+      "Bash(pip install:*)",
+      "Bash(iconv:*)"
     ],
     "deny": [],
     "ask": []

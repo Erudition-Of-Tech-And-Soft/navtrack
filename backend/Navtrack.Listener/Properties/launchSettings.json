@@ -5,7 +5,7 @@
       "commandName": "Project",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development",
-        "connectionString": "mongodb://localhost:27017"
+        "connectionString": "mongodb://31.97.146.1:27017"
       }
     }
   }
