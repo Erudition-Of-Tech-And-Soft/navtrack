@@ -8,5 +8,9 @@
 export interface UpdateAsset {
   /** @minLength 1 */
   chasisNumber: string;
+  /** @nullable */
+  hasActiveSeizure?: boolean | null;
   name?: string;
+  /** @nullable */
+  seizureExpirationDate?: string | null;
 }

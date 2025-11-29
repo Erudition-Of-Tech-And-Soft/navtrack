@@ -1,3 +1,4 @@
+using System;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -17,6 +18,7 @@ using Navtrack.Api.Services.Common.Context;
 using Navtrack.Api.Services.Common.Exceptions;
 using Navtrack.Api.Services.Common.IdentityServer;
 using Navtrack.Api.Services.Common.Mappers;
+using Navtrack.Api.Services.Background;
 using Navtrack.DataAccess.Mongo;
 using Navtrack.Shared.Library.DI;
 
@@ -92,6 +94,15 @@ public abstract class BaseApiProgram<T>
 
         builder.Services.AddOptions<MongoOptions>().Bind(builder.Configuration.GetSection(nameof(MongoOptions)));
         builder.Services.AddSingleton<IClientErrorFactory, CustomClientErrorFactory>();
+
+        // Register HttpClient for Listener communication
+        builder.Services.AddHttpClient("ListenerClient", client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(30);
+        });
+
+        // Register Background Services
+        builder.Services.AddHostedService<AssetStatusUpdateService>();
 
         baseProgramOptions?.ConfigureServices?.Invoke(builder);
 

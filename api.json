@@ -193,6 +193,58 @@
         }
       }
     },
+    "/organizations/{organizationId}/assets/{assetId}/commands": {
+      "post": {
+        "tags": [
+          "Assets"
+        ],
+        "operationId": "Assets_SendCommand",
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 1
+          },
+          {
+            "name": "assetId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 2
+          }
+        ],
+        "requestBody": {
+          "x-name": "model",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendGpsCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 3
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GpsCommandResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/assets/{assetId}": {
       "get": {
         "tags": [
@@ -2409,6 +2461,7 @@
         "required": [
           "id",
           "name",
+          "chasisNumber",
           "organizationId",
           "online",
           "maxSpeed"
@@ -2419,6 +2472,10 @@
             "minLength": 1
           },
           "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "chasisNumber": {
             "type": "string",
             "minLength": 1
           },
@@ -2456,6 +2513,20 @@
                 "$ref": "#/components/schemas/Device"
               }
             ]
+          },
+          "isDelayed": {
+            "type": "boolean"
+          },
+          "hasActiveSeizure": {
+            "type": "boolean"
+          },
+          "seizureExpirationDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "gpsInactive": {
+            "type": "boolean"
           }
         }
       },
@@ -2735,6 +2806,43 @@
           }
         }
       },
+      "GpsCommandResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "sentAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "commandType": {
+            "type": "string"
+          }
+        }
+      },
+      "SendGpsCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "commandType"
+        ],
+        "properties": {
+          "commandType": {
+            "type": "string",
+            "minLength": 1
+          },
+          "parameters": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": {}
+          }
+        }
+      },
       "Entity": {
         "type": "object",
         "additionalProperties": false,
@@ -2749,11 +2857,16 @@
         "additionalProperties": false,
         "required": [
           "name",
+          "chasisNumber",
           "deviceTypeId",
           "serialNumber"
         ],
         "properties": {
           "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "chasisNumber": {
             "type": "string",
             "minLength": 1
           },
@@ -2799,9 +2912,25 @@
       "UpdateAsset": {
         "type": "object",
         "additionalProperties": false,
+        "required": [
+          "chasisNumber"
+        ],
         "properties": {
           "name": {
             "type": "string"
+          },
+          "chasisNumber": {
+            "type": "string",
+            "minLength": 1
+          },
+          "hasActiveSeizure": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "seizureExpirationDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
           }
         }
       },
@@ -3647,11 +3776,15 @@
         "description": "",
         "x-enumNames": [
           "Owner",
-          "Member"
+          "Employee",
+          "Member",
+          "Seizer"
         ],
         "enum": [
           "Owner",
-          "Member"
+          "Employee",
+          "Member",
+          "Seizer"
         ]
       },
       "CreateOrganizationUser": {

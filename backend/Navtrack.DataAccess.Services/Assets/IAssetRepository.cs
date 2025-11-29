@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MongoDB.Bson;
@@ -11,7 +12,7 @@ public interface IAssetRepository : IGenericRepository<AssetDocument>
 {
     Task<AssetDocument> Get(string serialNumber, int protocolPort);
     Task<bool> NameIsUsed(ObjectId organizationId, string name, ObjectId? assetId = null);
-    Task UpdateAssetInfo(string assetId, string name, string chasisNumber);
+    Task UpdateAssetInfo(string assetId, string name, string chasisNumber, bool? hasActiveSeizure = null, DateTime? seizureExpirationDate = null);
     Task UpdateMessages(ObjectId assetId, DeviceMessageDocument lastMessage, DeviceMessageDocument? positionMessage);
     Task SetActiveDevice(ObjectId assetId, AssetDeviceElement assetDevice);
     Task<List<AssetDocument>> GetByTeamId(ObjectId teamId);

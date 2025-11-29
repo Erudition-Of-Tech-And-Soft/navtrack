@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.Extensions.Logging;
 using Navtrack.DataAccess.Model.Devices.Messages;
 using Navtrack.Listener.Models;
 using Navtrack.Listener.Server;
@@ -18,6 +19,16 @@ namespace Navtrack.Listener.Protocols.W2j;
 [Service(typeof(ICustomMessageHandler<W2jProtocol>))]
 public class W2jMessageHandler : BaseMessageHandler<W2jProtocol>
 {
+    private readonly IDeviceConnectionManager _connectionManager;
+    private readonly ILogger<W2jMessageHandler> _logger;
+
+    public W2jMessageHandler(
+        IDeviceConnectionManager connectionManager,
+        ILogger<W2jMessageHandler> logger)
+    {
+        _connectionManager = connectionManager;
+        _logger = logger;
+    }
     public override IEnumerable<DeviceMessageDocument>? ParseRange(MessageInput input)
     {
         // Verificar longitud mínima (sin los delimitadores 0x7E)
@@ -61,11 +72,41 @@ public class W2jMessageHandler : BaseMessageHandler<W2jProtocol>
             MessageType.TerminalAuthentication => HandleAuthentication(input, deviceId, sequenceNumber),
             MessageType.TerminalHeartbeat => HandleHeartbeat(input, deviceId, sequenceNumber),
             MessageType.LocationReport => HandleLocationReport(input, deviceId, sequenceNumber, messageBody),
+            MessageType.LocationQueryResponse => HandleLocationQueryResponse(input, deviceId, sequenceNumber, messageBody),
             MessageType.BatchLocationReport => HandleBatchLocationReport(input, deviceId, sequenceNumber, messageBody),
+            MessageType.TerminalGeneralResponse => HandleTerminalGeneralResponse(input, deviceId, sequenceNumber, messageBody),
+            MessageType.QueryParametersResponse => HandleQueryParametersResponse(input, deviceId, sequenceNumber, messageBody),
+            MessageType.TextInformationSubmit => HandleTextInformationSubmit(input, deviceId, sequenceNumber, messageBody),
+            MessageType.MultimediaDataUpload => HandleMultimediaDataUpload(input, deviceId, sequenceNumber, messageBody),
             _ => HandleUnknownMessage(input, deviceId, messageId)
         };
 
         return message != null ? new[] { message } : null;
+    }
+
+    /// <summary>
+    /// Registra la conexión del dispositivo con el DeviceConnectionManager
+    /// </summary>
+    private void RegisterDeviceConnection(MessageInput input, string deviceId)
+    {
+        input.ConnectionContext.SetDevice(deviceId);
+
+        // Registrar conexión TCP con el DeviceConnectionManager
+        if (!_connectionManager.IsDeviceConnected(deviceId))
+        {
+            var tcpConnection = new TcpDeviceConnection(
+                input.NetworkStream.NetworkStream,
+                deviceId,
+                _logger
+            );
+
+            _connectionManager.RegisterConnection(deviceId, tcpConnection);
+
+            _logger.LogInformation(
+                "Device {SerialNumber} registered with connection manager",
+                deviceId
+            );
+        }
     }
 
     /// <summary>
@@ -75,7 +116,7 @@ public class W2jMessageHandler : BaseMessageHandler<W2jProtocol>
     /// </summary>
     private DeviceMessageDocument? HandleRegistration(MessageInput input, string deviceId, ushort sequenceNumber, byte[] body)
     {
-        input.ConnectionContext.SetDevice(deviceId);
+        RegisterDeviceConnection(input, deviceId);
 
         // Enviar respuesta de registro exitoso
         byte[] response = BuildRegistrationResponse(deviceId, sequenceNumber, 0, "OK");
@@ -107,7 +148,7 @@ public class W2jMessageHandler : BaseMessageHandler<W2jProtocol>
     /// </summary>
     private DeviceMessageDocument? HandleAuthentication(MessageInput input, string deviceId, ushort sequenceNumber)
     {
-        input.ConnectionContext.SetDevice(deviceId);
+        RegisterDeviceConnection(input, deviceId);
 
         // Enviar respuesta genérica de éxito
         byte[] response = BuildGeneralResponse(deviceId, sequenceNumber, MessageType.TerminalAuthentication, 0);
@@ -122,7 +163,7 @@ public class W2jMessageHandler : BaseMessageHandler<W2jProtocol>
     /// </summary>
     private DeviceMessageDocument? HandleHeartbeat(MessageInput input, string deviceId, ushort sequenceNumber)
     {
-        input.ConnectionContext.SetDevice(deviceId);
+        RegisterDeviceConnection(input, deviceId);
 
         // Enviar respuesta de heartbeat
         byte[] response = BuildGeneralResponse(deviceId, sequenceNumber, MessageType.TerminalHeartbeat, 0);
@@ -144,7 +185,7 @@ public class W2jMessageHandler : BaseMessageHandler<W2jProtocol>
             return null;
         }
 
-        input.ConnectionContext.SetDevice(deviceId);
+        RegisterDeviceConnection(input, deviceId);
 
         // Enviar respuesta
         byte[] response = BuildGeneralResponse(deviceId, sequenceNumber, MessageType.LocationReport, 0);
@@ -183,18 +224,36 @@ public class W2jMessageHandler : BaseMessageHandler<W2jProtocol>
         // Verificar si tiene GPS válido
         bool hasGps = (status & 0x02) != 0;
 
+        // Parsear información adicional si existe (después del byte 28)
+        var additionalInfo = new Dictionary<string, object>();
+        if (body.Length > 28)
+        {
+            ParseAdditionalLocationInfo(body, 28, additionalInfo);
+        }
+
+        var positionElement = new PositionElement
+        {
+            Date = dateTime,
+            Valid = hasGps,
+            Latitude = latitude,
+            Longitude = longitude,
+            Altitude = hasGps ? altitude : null,
+            Speed = hasGps ? (float)speed : null,
+            Heading = hasGps ? heading : null
+        };
+
+        // Agregar información adicional como propiedades
+        if (additionalInfo.Count > 0)
+        {
+            foreach (var kvp in additionalInfo)
+            {
+                // TODO: Agregar a propiedades extendidas del PositionElement si se requiere
+            }
+        }
+
         return new DeviceMessageDocument
         {
-            Position = new PositionElement
-            {
-                Date = dateTime,
-                Valid = hasGps,
-                Latitude = latitude,
-                Longitude = longitude,
-                Altitude = hasGps ? altitude : null,
-                Speed = hasGps ? (float)speed : null,
-                Heading = hasGps ? heading : null
-            }
+            Position = positionElement
         };
     }
 
@@ -203,7 +262,7 @@ public class W2jMessageHandler : BaseMessageHandler<W2jProtocol>
     /// </summary>
     private DeviceMessageDocument? HandleBatchLocationReport(MessageInput input, string deviceId, ushort sequenceNumber, byte[] body)
     {
-        input.ConnectionContext.SetDevice(deviceId);
+        RegisterDeviceConnection(input, deviceId);
 
         // Por ahora solo respondemos, la implementación completa requeriría devolver múltiples entidades
         byte[] response = BuildGeneralResponse(deviceId, sequenceNumber, MessageType.BatchLocationReport, 0);
@@ -214,11 +273,106 @@ public class W2jMessageHandler : BaseMessageHandler<W2jProtocol>
     }
 
     /// <summary>
+    /// Maneja respuesta de consulta de ubicación (0x0201)
+    /// Mismo formato que 0x0200
+    /// </summary>
+    private DeviceMessageDocument? HandleLocationQueryResponse(MessageInput input, string deviceId, ushort sequenceNumber, byte[] body)
+    {
+        // Mismo formato que LocationReport
+        return HandleLocationReport(input, deviceId, sequenceNumber, body);
+    }
+
+    /// <summary>
+    /// Maneja respuesta general del terminal (0x0001)
+    /// Body: [SeqNum 2B] [MsgID 2B] [Result 1B]
+    /// </summary>
+    private DeviceMessageDocument? HandleTerminalGeneralResponse(MessageInput input, string deviceId, ushort sequenceNumber, byte[] body)
+    {
+        RegisterDeviceConnection(input, deviceId);
+
+        if (body.Length >= 5)
+        {
+            ushort responseSeqNum = (ushort)((body[0] << 8) | body[1]);
+            ushort responseMsgId = (ushort)((body[2] << 8) | body[3]);
+            byte result = body[4];
+
+            // Log: Terminal respondió al mensaje {responseMsgId} con resultado {result}
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Maneja respuesta de consulta de parámetros (0x0104)
+    /// Body: [SeqNum 2B] [ParamCount 1B] [Parameters...]
+    /// </summary>
+    private DeviceMessageDocument? HandleQueryParametersResponse(MessageInput input, string deviceId, ushort sequenceNumber, byte[] body)
+    {
+        RegisterDeviceConnection(input, deviceId);
+
+        // Enviar confirmación
+        byte[] response = BuildGeneralResponse(deviceId, sequenceNumber, MessageType.QueryParametersResponse, 0);
+        input.NetworkStream.Write(response);
+
+        // TODO: Parsear parámetros si es necesario para logging/config
+        return null;
+    }
+
+    /// <summary>
+    /// Maneja envío de texto del terminal (0x6006)
+    /// Body: [Flag 1B] [Text...]
+    /// </summary>
+    private DeviceMessageDocument? HandleTextInformationSubmit(MessageInput input, string deviceId, ushort sequenceNumber, byte[] body)
+    {
+        RegisterDeviceConnection(input, deviceId);
+
+        if (body.Length > 1)
+        {
+            byte flag = body[0];
+            string text = Encoding.GetEncoding("GBK").GetString(body, 1, body.Length - 1).TrimEnd('\0');
+
+            // Log: Texto recibido del terminal: {text}
+        }
+
+        // Enviar confirmación
+        byte[] response = BuildGeneralResponse(deviceId, sequenceNumber, MessageType.TextInformationSubmit, 0);
+        input.NetworkStream.Write(response);
+
+        return null;
+    }
+
+    /// <summary>
+    /// Maneja subida de datos multimedia (0x0801)
+    /// Body: [MultimediaID 4B] [Type 1B] [Format 1B] [EventCode 1B] [ChannelID 1B] [Data...]
+    /// </summary>
+    private DeviceMessageDocument? HandleMultimediaDataUpload(MessageInput input, string deviceId, ushort sequenceNumber, byte[] body)
+    {
+        RegisterDeviceConnection(input, deviceId);
+
+        if (body.Length >= 8)
+        {
+            uint multimediaId = (uint)((body[0] << 24) | (body[1] << 16) | (body[2] << 8) | body[3]);
+            byte mediaType = body[4]; // 0:imagen, 1:audio, 2:video
+            byte format = body[5]; // 0:JPEG, 1:TIF, 2:MP3, 3:WAV, 4:WMV
+            byte eventCode = body[6];
+            byte channelId = body[7];
+
+            // TODO: Guardar datos multimedia si es necesario
+        }
+
+        // Enviar confirmación
+        byte[] response = BuildGeneralResponse(deviceId, sequenceNumber, MessageType.MultimediaDataUpload, 0);
+        input.NetworkStream.Write(response);
+
+        return null;
+    }
+
+    /// <summary>
     /// Maneja mensajes desconocidos
     /// </summary>
     private DeviceMessageDocument? HandleUnknownMessage(MessageInput input, string deviceId, ushort messageId)
     {
-        input.ConnectionContext.SetDevice(deviceId);
+        RegisterDeviceConnection(input, deviceId);
 
         // No retornar mensaje para tipos desconocidos
         return null;
@@ -283,6 +437,160 @@ public class W2jMessageHandler : BaseMessageHandler<W2jProtocol>
     private byte DecToBcd(int dec)
     {
         return (byte)(((dec / 10) << 4) | (dec % 10));
+    }
+
+    /// <summary>
+    /// Parsea información adicional de ubicación según Tabla 20 del protocolo JT808
+    /// </summary>
+    private void ParseAdditionalLocationInfo(byte[] data, int offset, Dictionary<string, object> info)
+    {
+        int pos = offset;
+        while (pos + 2 <= data.Length)
+        {
+            byte id = data[pos];
+            byte length = data[pos + 1];
+            pos += 2;
+
+            if (pos + length > data.Length)
+                break;
+
+            switch (id)
+            {
+                case 0x01: // Mileage (DWORD, 1/10km)
+                    if (length == 4)
+                    {
+                        uint mileage = (uint)((data[pos] << 24) | (data[pos + 1] << 16) | (data[pos + 2] << 8) | data[pos + 3]);
+                        info["Mileage"] = mileage / 10.0; // km
+                    }
+                    break;
+
+                case 0x2B: // Fuel consumption (DWORD)
+                    if (length == 4)
+                    {
+                        uint fuel = (uint)((data[pos] << 24) | (data[pos + 1] << 16) | (data[pos + 2] << 8) | data[pos + 3]);
+                        info["FuelConsumption"] = fuel;
+                    }
+                    break;
+
+                case 0x30: // Network signal strength CSQ (BYTE)
+                    if (length == 1)
+                    {
+                        info["CSQ"] = data[pos];
+                    }
+                    break;
+
+                case 0x31: // GPS satellite count (BYTE)
+                    if (length == 1)
+                    {
+                        info["SatelliteCount"] = data[pos];
+                    }
+                    break;
+
+                case 0x52: // Forward/Reverse (BYTE)
+                    if (length == 1)
+                    {
+                        // 0:unknown, 1:forward(empty), 2:reverse(loaded), 3:stop
+                        info["Direction"] = data[pos];
+                    }
+                    break;
+
+                case 0x53: // 2G base station data (1+n*8)
+                    if (length >= 1)
+                    {
+                        int bsCount = data[pos];
+                        var baseStations = new List<Dictionary<string, object>>();
+                        for (int i = 0; i < bsCount && pos + 1 + (i + 1) * 8 <= pos + length; i++)
+                        {
+                            int bsOffset = pos + 1 + i * 8;
+                            var bs = new Dictionary<string, object>
+                            {
+                                ["MCC"] = (data[bsOffset] << 8) | data[bsOffset + 1],
+                                ["MNC"] = data[bsOffset + 2],
+                                ["LAC"] = (data[bsOffset + 3] << 8) | data[bsOffset + 4],
+                                ["CellID"] = (data[bsOffset + 5] << 8) | data[bsOffset + 6],
+                                ["Signal"] = data[bsOffset + 7]
+                            };
+                            baseStations.Add(bs);
+                        }
+                        info["BaseStations2G"] = baseStations;
+                    }
+                    break;
+
+                case 0x54: // WiFi data (1+n*7) - NUEVO en v1.1
+                    if (length >= 1)
+                    {
+                        int wifiCount = data[pos];
+                        var wifiNetworks = new List<Dictionary<string, object>>();
+                        for (int i = 0; i < wifiCount && pos + 1 + (i + 1) * 7 <= pos + length; i++)
+                        {
+                            int wifiOffset = pos + 1 + i * 7;
+                            var wifi = new Dictionary<string, object>
+                            {
+                                ["MAC"] = BitConverter.ToString(data, wifiOffset, 6).Replace("-", ":"),
+                                ["Signal"] = data[wifiOffset + 6]
+                            };
+                            wifiNetworks.Add(wifi);
+                        }
+                        info["WiFiNetworks"] = wifiNetworks;
+                    }
+                    break;
+
+                case 0x56: // Internal battery capacity (2 bytes)
+                    if (length == 2)
+                    {
+                        info["BatteryLevel"] = data[pos];
+                        // byte 2 reserved
+                    }
+                    break;
+
+                case 0x5D: // 4G base station data (1+n*10)
+                    if (length >= 1)
+                    {
+                        int bsCount = data[pos];
+                        var baseStations = new List<Dictionary<string, object>>();
+                        for (int i = 0; i < bsCount && pos + 1 + (i + 1) * 10 <= pos + length; i++)
+                        {
+                            int bsOffset = pos + 1 + i * 10;
+                            var bs = new Dictionary<string, object>
+                            {
+                                ["MCC"] = (data[bsOffset] << 8) | data[bsOffset + 1],
+                                ["MNC"] = data[bsOffset + 2],
+                                ["LAC"] = (data[bsOffset + 3] << 8) | data[bsOffset + 4],
+                                ["CellID"] = (data[bsOffset + 5] << 24) | (data[bsOffset + 6] << 16) |
+                                            (data[bsOffset + 7] << 8) | data[bsOffset + 8],
+                                ["Signal"] = data[bsOffset + 9]
+                            };
+                            baseStations.Add(bs);
+                        }
+                        info["BaseStations4G"] = baseStations;
+                    }
+                    break;
+
+                case 0x61: // Main power supply voltage (WORD, 0.01V)
+                    if (length == 2)
+                    {
+                        ushort voltage = (ushort)((data[pos] << 8) | data[pos + 1]);
+                        info["Voltage"] = voltage / 100.0; // V
+                    }
+                    break;
+
+                case 0xF1: // ICCID (20 bytes)
+                    if (length == 20)
+                    {
+                        info["ICCID"] = Encoding.ASCII.GetString(data, pos, length).TrimEnd('\0');
+                    }
+                    break;
+
+                case 0xF3: // Fortification/withdrawal status - NUEVO en v1.1
+                    if (length == 1)
+                    {
+                        info["Fortified"] = data[pos] == 0x01;
+                    }
+                    break;
+            }
+
+            pos += length;
+        }
     }
 
     #endregion
@@ -489,6 +797,196 @@ public class W2jMessageHandler : BaseMessageHandler<W2jProtocol>
         }
 
         return result;
+    }
+
+    #endregion
+
+    #region Métodos para enviar comandos desde la plataforma al terminal
+
+    /// <summary>
+    /// Envía comando de control al terminal (0x8105)
+    /// </summary>
+    /// <param name="deviceId">ID del dispositivo</param>
+    /// <param name="command">Código de comando según Tabla 14</param>
+    /// <param name="parameters">Parámetros del comando (opcional)</param>
+    /// <returns>Bytes del mensaje completo para enviar</returns>
+    public static byte[] BuildTerminalControlCommand(string deviceId, byte command, string? parameters = null)
+    {
+        using var ms = new System.IO.MemoryStream();
+        ms.WriteByte(command);
+
+        if (!string.IsNullOrEmpty(parameters))
+        {
+            byte[] paramBytes = Encoding.GetEncoding("GBK").GetBytes(parameters);
+            ms.Write(paramBytes, 0, paramBytes.Length);
+        }
+
+        byte[] body = ms.ToArray();
+        return BuildMessageStatic(MessageType.TerminalControl, deviceId, body);
+    }
+
+    /// <summary>
+    /// Envía comando de consulta de ubicación (0x8201)
+    /// </summary>
+    public static byte[] BuildLocationQueryCommand(string deviceId)
+    {
+        // Body vacío
+        return BuildMessageStatic(MessageType.LocationInformationQuery, deviceId, Array.Empty<byte>());
+    }
+
+    /// <summary>
+    /// Envía comando de consulta de parámetros (0x8104)
+    /// </summary>
+    public static byte[] BuildQueryParametersCommand(string deviceId)
+    {
+        // Body vacío
+        return BuildMessageStatic(MessageType.QueryTerminalParameters, deviceId, Array.Empty<byte>());
+    }
+
+    /// <summary>
+    /// Envía comando de configuración de parámetros (0x8103)
+    /// </summary>
+    /// <param name="deviceId">ID del dispositivo</param>
+    /// <param name="parameters">Diccionario de parámetros: Key=ParameterID, Value=byte[]</param>
+    public static byte[] BuildSetParametersCommand(string deviceId, Dictionary<uint, byte[]> parameters)
+    {
+        using var ms = new System.IO.MemoryStream();
+
+        // Total de parámetros
+        ms.WriteByte((byte)parameters.Count);
+
+        // Escribir cada parámetro
+        foreach (var param in parameters)
+        {
+            // Parameter ID (4 bytes)
+            ms.WriteByte((byte)(param.Key >> 24));
+            ms.WriteByte((byte)((param.Key >> 16) & 0xFF));
+            ms.WriteByte((byte)((param.Key >> 8) & 0xFF));
+            ms.WriteByte((byte)(param.Key & 0xFF));
+
+            // Parameter length
+            ms.WriteByte((byte)param.Value.Length);
+
+            // Parameter value
+            ms.Write(param.Value, 0, param.Value.Length);
+        }
+
+        byte[] body = ms.ToArray();
+        return BuildMessageStatic(MessageType.SetTerminalParameters, deviceId, body);
+    }
+
+    /// <summary>
+    /// Envía mensaje de texto al terminal (0x8300)
+    /// </summary>
+    /// <param name="deviceId">ID del dispositivo</param>
+    /// <param name="text">Texto a enviar (codificación GBK)</param>
+    /// <param name="flags">Flags del mensaje (por defecto 0x02 = transmisión de texto)</param>
+    public static byte[] BuildTextDistributionCommand(string deviceId, string text, byte flags = 0x02)
+    {
+        using var ms = new System.IO.MemoryStream();
+        ms.WriteByte(flags);
+
+        byte[] textBytes = Encoding.GetEncoding("GBK").GetBytes(text);
+        ms.Write(textBytes, 0, textBytes.Length);
+
+        byte[] body = ms.ToArray();
+        return BuildMessageStatic(MessageType.TextDistribution, deviceId, body);
+    }
+
+    /// <summary>
+    /// Versión estática del BuildMessage para poder llamarla desde métodos estáticos
+    /// </summary>
+    private static byte[] BuildMessageStatic(ushort messageId, string deviceId, byte[] body)
+    {
+        using var ms = new System.IO.MemoryStream();
+
+        // Header
+        ms.WriteByte((byte)(messageId >> 8));
+        ms.WriteByte((byte)(messageId & 0xFF));
+
+        // Body attributes
+        ushort bodyAttr = (ushort)(body.Length & 0x03FF);
+        ms.WriteByte((byte)(bodyAttr >> 8));
+        ms.WriteByte((byte)(bodyAttr & 0xFF));
+
+        // Device ID (6 bytes BCD)
+        byte[] deviceIdBytes = ParseDeviceIdToBytesStatic(deviceId);
+        ms.Write(deviceIdBytes, 0, 6);
+
+        // Sequence number (usando timestamp para variación)
+        ushort seqNum = (ushort)(DateTime.UtcNow.Ticks & 0xFFFF);
+        ms.WriteByte((byte)(seqNum >> 8));
+        ms.WriteByte((byte)(seqNum & 0xFF));
+
+        // Body
+        ms.Write(body, 0, body.Length);
+
+        byte[] messageData = ms.ToArray();
+
+        // Checksum
+        byte checksum = CalculateChecksumStatic(messageData);
+        ms.WriteByte(checksum);
+        byte[] messageWithChecksum = ms.ToArray();
+
+        // Escape
+        byte[] escapedData = EscapeMessageStatic(messageWithChecksum);
+
+        // Final message with delimiters
+        using var finalMs = new System.IO.MemoryStream();
+        finalMs.WriteByte(0x7E);
+        finalMs.Write(escapedData, 0, escapedData.Length);
+        finalMs.WriteByte(0x7E);
+
+        return finalMs.ToArray();
+    }
+
+    private static byte[] ParseDeviceIdToBytesStatic(string deviceId)
+    {
+        byte[] result = new byte[6];
+        deviceId = deviceId.PadLeft(12, '0');
+
+        for (int i = 0; i < 6; i++)
+        {
+            string digits = deviceId.Substring(i * 2, 2);
+            int value = int.Parse(digits);
+            byte bcd = (byte)(((value / 10) << 4) | (value % 10));
+            result[i] = bcd;
+        }
+
+        return result;
+    }
+
+    private static byte CalculateChecksumStatic(byte[] data)
+    {
+        byte checksum = 0;
+        foreach (byte b in data)
+        {
+            checksum ^= b;
+        }
+        return checksum;
+    }
+
+    private static byte[] EscapeMessageStatic(byte[] data)
+    {
+        using var ms = new System.IO.MemoryStream();
+        foreach (byte b in data)
+        {
+            if (b == 0x7E)
+            {
+                ms.WriteByte(0x7D);
+                ms.WriteByte(0x02);
+            }
+            else if (b == 0x7D)
+            {
+                ms.WriteByte(0x7D);
+                ms.WriteByte(0x01);
+            }
+            else
+            {
+                ms.WriteByte(b);
+            }
+        }
+        return ms.ToArray();
     }
 
     #endregion

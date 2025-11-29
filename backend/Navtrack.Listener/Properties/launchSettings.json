@@ -3,6 +3,7 @@
   "profiles": {
     "Navtrack.Listener": {
       "commandName": "Project",
+      "applicationUrl": "http://0.0.0.0:5001",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development",
         "connectionString": "mongodb://31.97.146.1:27017"

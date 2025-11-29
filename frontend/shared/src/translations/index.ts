@@ -1,8 +1,10 @@
 import en from "./en.json";
+import es from "./es.json";
 import countryList from "./countries.json";
 
 export const translations = {
-  en: en
+  en: en,
+  es: es
 };
 
 export const countries = countryList;

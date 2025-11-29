@@ -18,10 +18,22 @@ export function useAuthorize() {
       switch (userRole) {
         case OrganizationUserRole.Owner:
           return organization?.userRole === OrganizationUserRole.Owner;
+        case OrganizationUserRole.Employee:
+          return (
+            organization?.userRole === OrganizationUserRole.Owner ||
+            organization?.userRole === OrganizationUserRole.Employee
+          );
         case OrganizationUserRole.Member:
           return (
             organization?.userRole === OrganizationUserRole.Owner ||
+            organization?.userRole === OrganizationUserRole.Employee ||
             organization?.userRole === OrganizationUserRole.Member
+          );
+        case OrganizationUserRole.Seizer:
+          return (
+            organization?.userRole === OrganizationUserRole.Owner ||
+            organization?.userRole === OrganizationUserRole.Employee ||
+            organization?.userRole === OrganizationUserRole.Seizer
           );
         default:
           return false;
@@ -59,5 +71,26 @@ export function useAuthorize() {
     [authorizeOrganization, currentAsset.id, currentUser.data?.assets]
   );
 
-  return { organization: authorizeOrganization, asset: assetAuthorize };
+  const canEdit = useCallback(() => {
+    return authorizeOrganization(OrganizationUserRole.Owner);
+  }, [authorizeOrganization]);
+
+  const canSendCommands = useCallback(() => {
+    return authorizeOrganization(OrganizationUserRole.Employee);
+  }, [authorizeOrganization]);
+
+  const isSeizer = useCallback(() => {
+    const organization = currentUser.data?.organizations?.find(
+      (x) => x.organizationId === currentOrganization.id
+    );
+    return organization?.userRole === OrganizationUserRole.Seizer;
+  }, [currentOrganization.id, currentUser.data?.organizations]);
+
+  return {
+    organization: authorizeOrganization,
+    asset: assetAuthorize,
+    canEdit,
+    canSendCommands,
+    isSeizer,
+  };
 }

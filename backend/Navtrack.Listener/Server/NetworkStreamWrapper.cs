@@ -8,6 +8,7 @@ public class NetworkStreamWrapper(TcpClient tcpClient) : INetworkStreamWrapper
 {
     private readonly NetworkStream networkStream = tcpClient.GetStream();
     public TcpClient TcpClient { get; } = tcpClient;
+    public NetworkStream NetworkStream => networkStream;
     public string? RemoteEndPoint => TcpClient.Client.RemoteEndPoint?.ToString();
 
     public ValueTask DisposeAsync()

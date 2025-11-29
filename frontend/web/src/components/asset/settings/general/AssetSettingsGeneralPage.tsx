@@ -4,17 +4,22 @@ import { RenameAssetFormValues, useRenameAsset } from "./useRenameAsset";
 import { FormattedMessage } from "react-intl";
 import { DeleteAssetModal } from "./DeleteAssetModal";
 import { Icon } from "../../../ui/icon/Icon";
-import { faCheck } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faTerminal } from "@fortawesome/free-solid-svg-icons";
 import { LoadingIndicator } from "../../../ui/loading-indicator/LoadingIndicator";
 import { useCurrentAsset } from "@navtrack/shared/hooks/current/useCurrentAsset";
 import { Card } from "../../../ui/card/Card";
 import { CardBody } from "../../../ui/card/CardBody";
 import { Heading } from "../../../ui/heading/Heading";
 import { Button } from "../../../ui/button/Button";
+import { GpsCommandsModal } from "../../commands/GpsCommandsModal";
+import { useState } from "react";
+import { useAuthorize } from "@navtrack/shared/hooks/current/useAuthorize";
 
 export function AssetSettingsGeneralPage() {
   const renameAsset = useRenameAsset();
   const currentAsset = useCurrentAsset();
+  const authorize = useAuthorize();
+  const [commandsModalOpen, setCommandsModalOpen] = useState(false);
 
   return (
     <>
@@ -73,6 +78,24 @@ export function AssetSettingsGeneralPage() {
                 </Formik>
               </div>
             </div>
+            {authorize.canSendCommands() && (
+              <div className="mt-6">
+                <Heading type="h2">
+                  <FormattedMessage id="gps.commands.title" />
+                </Heading>
+                <p className="mt-2 text-sm text-gray-500">
+                  <FormattedMessage id="gps.commands.description" />
+                </p>
+                <div className="mt-4 text-right">
+                  <Button
+                    color="primary"
+                    icon={faTerminal}
+                    onClick={() => setCommandsModalOpen(true)}>
+                    <FormattedMessage id="gps.commands.open" />
+                  </Button>
+                </div>
+              </div>
+            )}
             <div className="mt-6">
               <Heading type="h2">
                 <FormattedMessage id="assets.settings.general.delete-asset" />
@@ -86,6 +109,13 @@ export function AssetSettingsGeneralPage() {
             </div>
           </CardBody>
         </Card>
+      )}
+      {currentAsset.data && (
+        <GpsCommandsModal
+          asset={currentAsset.data}
+          open={commandsModalOpen}
+          close={() => setCommandsModalOpen(false)}
+        />
       )}
     </>
   );

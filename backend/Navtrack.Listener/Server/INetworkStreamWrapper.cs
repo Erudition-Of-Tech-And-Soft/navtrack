@@ -12,5 +12,6 @@ public interface INetworkStreamWrapper : IAsyncDisposable
     void WriteByte(byte value);
     void Write(byte[] buffer);
     TcpClient TcpClient { get; }
+    NetworkStream NetworkStream { get; }
     string? RemoteEndPoint { get; }
 }

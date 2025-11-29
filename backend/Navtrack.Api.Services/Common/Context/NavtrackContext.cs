@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using MongoDB.Bson;
 using Navtrack.DataAccess.Model.Assets;
@@ -74,9 +75,48 @@ public class NavtrackContext
         return userRole switch
         {
             OrganizationUserRole.Owner => userOrganization?.UserRole == OrganizationUserRole.Owner,
+            OrganizationUserRole.Employee => userOrganization?.UserRole is OrganizationUserRole.Owner
+                or OrganizationUserRole.Employee,
             OrganizationUserRole.Member => userOrganization?.UserRole is OrganizationUserRole.Owner
+                or OrganizationUserRole.Employee
                 or OrganizationUserRole.Member,
+            OrganizationUserRole.Seizer => userOrganization?.UserRole is OrganizationUserRole.Owner
+                or OrganizationUserRole.Employee
+                or OrganizationUserRole.Seizer,
             _ => false
         };
+    }
+
+    /// <summary>
+    /// Verifica si el usuario puede ver un asset como Seizer
+    /// Solo puede ver assets con HasActiveSeizure=true y con SeizureExpirationDate no vencida
+    /// </summary>
+    public bool CanSeizerViewAsset(AssetDocument asset)
+    {
+        if (asset == null || User == null)
+        {
+            return false;
+        }
+
+        // Verificar que el usuario sea Seizer de la organización
+        var userOrg = User.Organizations?.FirstOrDefault(x => x.OrganizationId == asset.OrganizationId);
+        if (userOrg?.UserRole != OrganizationUserRole.Seizer)
+        {
+            return false;
+        }
+
+        // Verificar que el asset tenga incaute activo
+        if (!asset.HasActiveSeizure)
+        {
+            return false;
+        }
+
+        // Verificar que no haya expirado
+        if (asset.SeizureExpirationDate.HasValue && asset.SeizureExpirationDate.Value < DateTime.UtcNow)
+        {
+            return false;
+        }
+
+        return true;
     }
 }

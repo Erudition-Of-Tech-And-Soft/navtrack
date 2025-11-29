@@ -29,6 +29,11 @@ public class UpdateAssetRequestHandler(IAssetRepository assetRepository) : BaseR
 
     public override Task Handle(UpdateAssetRequest request)
     {
-        return assetRepository.UpdateAssetInfo(request.AssetId, request.Model.Name, request.Model.ChasisNumber);
+        return assetRepository.UpdateAssetInfo(
+            request.AssetId,
+            request.Model.Name,
+            request.Model.ChasisNumber,
+            request.Model.HasActiveSeizure,
+            request.Model.SeizureExpirationDate);
     }
 }

@@ -39,6 +39,7 @@ import type {
   ForgotPassword,
   FuelConsumptionReport,
   GeocodeReverseParams,
+  GpsCommandResult,
   ListOfAsset,
   ListOfAssetUser,
   ListOfDevice,
@@ -54,6 +55,7 @@ import type {
   Organization,
   ProblemDetails,
   ResetPassword,
+  SendGpsCommand,
   Team,
   TripList,
   TripReport,
@@ -405,6 +407,76 @@ export const useAssetsCreate = <TError = Error, TContext = unknown>(options?: {
   TContext
 > => {
   const mutationOptions = getAssetsCreateMutationOptions(options);
+
+  return useMutation(mutationOptions);
+};
+
+export const assetsSendCommand = (
+  organizationId: string,
+  assetId: string,
+  sendGpsCommand: SendGpsCommand
+) => {
+  return authAxiosInstance<GpsCommandResult>({
+    url: `/organizations/${organizationId}/assets/${assetId}/commands`,
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    data: sendGpsCommand
+  });
+};
+
+export const getAssetsSendCommandMutationOptions = <
+  TError = unknown,
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof assetsSendCommand>>,
+    TError,
+    { organizationId: string; assetId: string; data: SendGpsCommand },
+    TContext
+  >;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof assetsSendCommand>>,
+  TError,
+  { organizationId: string; assetId: string; data: SendGpsCommand },
+  TContext
+> => {
+  const { mutation: mutationOptions } = options ?? {};
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof assetsSendCommand>>,
+    { organizationId: string; assetId: string; data: SendGpsCommand }
+  > = (props) => {
+    const { organizationId, assetId, data } = props ?? {};
+
+    return assetsSendCommand(organizationId, assetId, data);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AssetsSendCommandMutationResult = NonNullable<
+  Awaited<ReturnType<typeof assetsSendCommand>>
+>;
+export type AssetsSendCommandMutationBody = SendGpsCommand;
+export type AssetsSendCommandMutationError = unknown;
+
+export const useAssetsSendCommand = <
+  TError = unknown,
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof assetsSendCommand>>,
+    TError,
+    { organizationId: string; assetId: string; data: SendGpsCommand },
+    TContext
+  >;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof assetsSendCommand>>,
+  TError,
+  { organizationId: string; assetId: string; data: SendGpsCommand },
+  TContext
+> => {
+  const mutationOptions = getAssetsSendCommandMutationOptions(options);
 
   return useMutation(mutationOptions);
 };

@@ -11,5 +11,7 @@ export type OrganizationUserRole =
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const OrganizationUserRole = {
   Owner: "Owner",
-  Member: "Member"
+  Employee: "Employee",
+  Member: "Member",
+  Seizer: "Seizer"
 } as const;

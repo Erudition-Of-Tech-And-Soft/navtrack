@@ -43,11 +43,32 @@ public class AssetRepository(IRepository repository) : GenericRepository<AssetDo
             .AnyAsync(filter);
     }
 
-    public async Task UpdateAssetInfo(string assetId, string name, string chasisNumber)
+    public async Task UpdateAssetInfo(string assetId, string name, string chasisNumber,
+        bool? hasActiveSeizure = null, DateTime? seizureExpirationDate = null)
     {
-        UpdateDefinition<AssetDocument> update = Builders<AssetDocument>.Update
-            .Set(x => x.Name, name)
-            .Set(x => x.ChasisNumber, chasisNumber);
+        var updates = new List<UpdateDefinition<AssetDocument>>
+        {
+            Builders<AssetDocument>.Update.Set(x => x.Name, name),
+            Builders<AssetDocument>.Update.Set(x => x.ChasisNumber, chasisNumber)
+        };
+
+        // Solo actualizar campos de incaute si se proporcionan (Owner only)
+        if (hasActiveSeizure.HasValue)
+        {
+            updates.Add(Builders<AssetDocument>.Update.Set(x => x.HasActiveSeizure, hasActiveSeizure.Value));
+        }
+
+        if (seizureExpirationDate.HasValue)
+        {
+            updates.Add(Builders<AssetDocument>.Update.Set(x => x.SeizureExpirationDate, seizureExpirationDate.Value));
+        }
+        else if (hasActiveSeizure.HasValue && !hasActiveSeizure.Value)
+        {
+            // Si se desactiva el incaute, limpiar la fecha de expiración
+            updates.Add(Builders<AssetDocument>.Update.Unset(x => x.SeizureExpirationDate));
+        }
+
+        UpdateDefinition<AssetDocument> update = Builders<AssetDocument>.Update.Combine(updates);
 
         await repository.GetCollection<AssetDocument>()
             .UpdateOneAsync(x => x.Id == ObjectId.Parse(assetId), update);

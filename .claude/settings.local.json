@@ -1,7 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git commit -m \"$(cat <<''EOF''\nFix Concox/GT06 IMEI extraction with leading zeros\n\nFixed bug where IMEI with multiple leading zeros was not matching Asset serial number. Changed from removing only 1 leading zero to using TrimStart(''0'') to remove all leading zeros.\n\nThis was preventing GT06 devices from associating with their Assets when IMEI had format like 0000018404228323.\n\nChanges:\n- ConcoxMessageHandler.GetImei(): Replace single character removal with TrimStart(''0'')\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
+      "Bash(npm run build)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nAdd asset search filter and map marker popups\n\nFeatures added:\n1. Asset Search Filter in Sidebar:\n   - Added search input field in the sidebar above the assets list\n   - Real-time filtering of assets by name (case-insensitive)\n   - Shows \"No assets found\" message when search has no results\n   - Search state managed with React useState hook\n\n2. Asset Name Popup on Map Markers:\n   - Added popup functionality to map markers\n   - When clicking on a marker, a popup displays the asset name\n   - Popup is implemented using Leaflet''s Popup component\n   - Integrated into MapCustomMarker component for reusability\n\nComponents modified:\n- AuthenticatedLayoutSidebar.tsx: Added search input and filtering logic\n- MapCustomMarker.tsx: Added popupContent prop and Popup rendering\n- MapPinLabel.tsx: Passed asset label to popup\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git commit -m \"$(cat <<''EOF''\nAdd ChasisNumber field to Asset model\n\nAdded required ChasisNumber string field to Asset across full stack:\n\nBackend changes:\n- AssetDocument: Added chasisNumber property with BSON serialization\n- Asset API model: Added required ChasisNumber property\n- CreateAsset/UpdateAsset: Added ChasisNumber to request models\n- AssetRepository: Renamed UpdateName to UpdateAssetInfo to handle both name and chassis number\n- Mappers: Added ChasisNumber mapping for create and read operations\n\nFrontend changes:\n- Asset TypeScript models: Added chasisNumber property to asset, createAsset, and updateAsset interfaces\n- Create asset form: Added ChasisNumber input field with validation\n- Asset settings form: Added ChasisNumber input field with validation\n- Form hooks: Added chasisNumber to form values, mutations, and Yup validation schemas\n- Translations: Added English labels and placeholders for ChasisNumber field\n\nAll fields marked as required with proper validation at both backend and frontend levels.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(cat:*)",
+      "Bash(dotnet build:*)",
+      "Bash(npm run generate:*)",
+      "Bash(npm install)",
+      "Bash(Select-String -Pattern \"error|Success|Failed\")"
     ],
     "deny": [],
     "ask": []

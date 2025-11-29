@@ -1,0 +1,119 @@
+{
+  "project_info": {
+    "project_number": "164511877704",
+    "firebase_url": "https://fir-pushexample-3bc0c.firebaseio.com",
+    "project_id": "fir-pushexample-3bc0c",
+    "storage_bucket": "fir-pushexample-3bc0c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:164511877704:android:c32e3f77757d2e4e",
+        "android_client_info": {
+          "package_name": "Firebase.MessagePush.Android"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "164511877704-kck4k42fdh3v851of7ca2032fhs05ls4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBIWw3zYnqJY4JyzXY7H3hSBm53ekopZR8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "164511877704-kck4k42fdh3v851of7ca2032fhs05ls4.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "164511877704-cbb3uoqga696nt5kj8jbc5qlf62msb71.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "Firebase.MessagePush"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:164511877704:android:83b9988d91e43eb7",
+        "android_client_info": {
+          "package_name": "com.edgarperez.Firebase.MessagePush"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "164511877704-kck4k42fdh3v851of7ca2032fhs05ls4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBIWw3zYnqJY4JyzXY7H3hSBm53ekopZR8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "164511877704-kck4k42fdh3v851of7ca2032fhs05ls4.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "164511877704-cbb3uoqga696nt5kj8jbc5qlf62msb71.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "Firebase.MessagePush"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:164511877704:android:7fd09dbf2c967eeddd667d",
+        "android_client_info": {
+          "package_name": "com.inversiones.com"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "164511877704-kck4k42fdh3v851of7ca2032fhs05ls4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBIWw3zYnqJY4JyzXY7H3hSBm53ekopZR8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "164511877704-kck4k42fdh3v851of7ca2032fhs05ls4.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "164511877704-cbb3uoqga696nt5kj8jbc5qlf62msb71.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "Firebase.MessagePush"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

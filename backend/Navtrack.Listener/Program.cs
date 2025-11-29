@@ -1,9 +1,11 @@
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Navtrack.DataAccess.Mongo;
+using Navtrack.Listener.Server;
 using Navtrack.Shared.Library.DI;
 
 namespace Navtrack.Listener;
@@ -14,15 +16,27 @@ public class Program
     {
         Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
 
-        HostApplicationBuilder hostApplicationBuilder = Host.CreateApplicationBuilder();
+        // Crear WebApplicationBuilder en lugar de HostApplicationBuilder
+        // para soportar tanto TCP listeners como HTTP endpoints
+        WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-        hostApplicationBuilder.Services.AddOptions<MongoOptions>()
-            .Bind(hostApplicationBuilder.Configuration.GetSection(nameof(MongoOptions)));
-        
-        hostApplicationBuilder.Services.AddCustomServices<Program>();
-        
-        IHost host = hostApplicationBuilder.Build();
+        builder.Services.AddOptions<MongoOptions>()
+            .Bind(builder.Configuration.GetSection(nameof(MongoOptions)));
 
-        await host.RunAsync();
+        builder.Services.AddCustomServices<Program>();
+
+        // Registrar DeviceConnectionManager como singleton
+        builder.Services.AddSingleton<IDeviceConnectionManager, DeviceConnectionManager>();
+
+        // Agregar controladores para endpoints HTTP internos
+        builder.Services.AddControllers();
+        builder.Services.AddEndpointsApiExplorer();
+
+        WebApplication app = builder.Build();
+
+        // Configurar endpoints HTTP solo para red interna
+        app.MapControllers();
+
+        await app.RunAsync();
     }
 }

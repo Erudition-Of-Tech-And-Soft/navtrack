@@ -14,13 +14,18 @@ import { faHdd } from "@fortawesome/free-regular-svg-icons";
 import { useMemo, useState } from "react";
 import { Authorize } from "@navtrack/shared/components/authorize/Authorize";
 import { OrganizationUserRole } from "@navtrack/shared/api/model";
+import { useAuthorize } from "@navtrack/shared/hooks/current/useAuthorize";
 
 export function AuthenticatedLayoutSidebar() {
   const currentOrganization = useCurrentOrganization();
   const assetsQuery = useAssetsQuery({
     organizationId: currentOrganization.data?.id
   });
+  const authorize = useAuthorize();
   const [searchTerm, setSearchTerm] = useState("");
+  const [filterDelayed, setFilterDelayed] = useState(false);
+  const [filterSeized, setFilterSeized] = useState(false);
+  const [filterGpsInactive, setFilterGpsInactive] = useState(false);
 
   const logoPath = useMemo(() => {
     if (currentOrganization.id) {
@@ -35,15 +40,35 @@ export function AuthenticatedLayoutSidebar() {
   const filteredAssets = useMemo(() => {
     if (!assetsQuery.data?.items) return [];
 
-    if (!searchTerm.trim()) {
-      return assetsQuery.data.items;
+    let filtered = assetsQuery.data.items;
+
+    // Apply search filter
+    if (searchTerm.trim()) {
+      const searchLower = searchTerm.toLowerCase().trim();
+      filtered = filtered.filter((asset) =>
+        asset.name.toLowerCase().includes(searchLower)
+      );
     }
 
-    const searchLower = searchTerm.toLowerCase().trim();
-    return assetsQuery.data.items.filter((asset) =>
-      asset.name.toLowerCase().includes(searchLower)
-    );
-  }, [assetsQuery.data?.items, searchTerm]);
+    // Apply status filters
+    if (filterDelayed) {
+      filtered = filtered.filter((asset) => asset.isDelayed);
+    }
+    if (filterSeized) {
+      filtered = filtered.filter((asset) => asset.hasActiveSeizure);
+    }
+    if (filterGpsInactive) {
+      filtered = filtered.filter((asset) => asset.gpsInactive);
+    }
+
+    return filtered;
+  }, [
+    assetsQuery.data?.items,
+    searchTerm,
+    filterDelayed,
+    filterSeized,
+    filterGpsInactive
+  ]);
 
   return (
     <div className="absolute bottom-0 top-0 flex w-64 flex-col">
@@ -83,6 +108,39 @@ export function AuthenticatedLayoutSidebar() {
           className="w-full rounded border border-gray-600 bg-gray-700 px-3 py-2 text-sm text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         />
       </div>
+      {authorize.canSendCommands() && (
+        <div className="bg-gray-800 px-4 pb-2">
+          <div className="flex flex-col space-y-1.5 text-xs">
+            <label className="flex cursor-pointer items-center text-gray-300 hover:text-white">
+              <input
+                type="checkbox"
+                checked={filterDelayed}
+                onChange={(e) => setFilterDelayed(e.target.checked)}
+                className="mr-2 h-3.5 w-3.5 rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0"
+              />
+              <FormattedMessage id="sidebar.filter-delayed" />
+            </label>
+            <label className="flex cursor-pointer items-center text-gray-300 hover:text-white">
+              <input
+                type="checkbox"
+                checked={filterSeized}
+                onChange={(e) => setFilterSeized(e.target.checked)}
+                className="mr-2 h-3.5 w-3.5 rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0"
+              />
+              <FormattedMessage id="sidebar.filter-seized" />
+            </label>
+            <label className="flex cursor-pointer items-center text-gray-300 hover:text-white">
+              <input
+                type="checkbox"
+                checked={filterGpsInactive}
+                onChange={(e) => setFilterGpsInactive(e.target.checked)}
+                className="mr-2 h-3.5 w-3.5 rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0"
+              />
+              <FormattedMessage id="sidebar.filter-gps-inactive" />
+            </label>
+          </div>
+        </div>
+      )}
       <div
         className="relative flex-1 overflow-y-scroll bg-gray-800 py-2"
         style={{

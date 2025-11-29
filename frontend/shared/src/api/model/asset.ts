@@ -13,8 +13,11 @@ export interface Asset {
   chasisNumber: string;
   /** @nullable */
   device?: AssetDevice;
+  gpsInactive?: boolean;
+  hasActiveSeizure?: boolean;
   /** @minLength 1 */
   id: string;
+  isDelayed?: boolean;
   /** @nullable */
   lastMessage?: AssetLastMessage;
   /** @nullable */
@@ -25,4 +28,6 @@ export interface Asset {
   online: boolean;
   /** @minLength 1 */
   organizationId: string;
+  /** @nullable */
+  seizureExpirationDate?: string | null;
 }

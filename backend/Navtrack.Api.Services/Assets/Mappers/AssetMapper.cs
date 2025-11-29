@@ -23,6 +23,12 @@ public static class AssetMapper
         model.Online = asset.LastMessage?.CreatedDate > DateTime.UtcNow.AddMinutes(-1);
         model.Device = DeviceMapper.Map(asset, deviceType);
 
+        // Nuevos campos para roles y gestión de incautes
+        model.IsDelayed = asset.IsDelayed;
+        model.HasActiveSeizure = asset.HasActiveSeizure;
+        model.SeizureExpirationDate = asset.SeizureExpirationDate;
+        model.GpsInactive = asset.GpsInactive;
+
         return model;
     }
 }
