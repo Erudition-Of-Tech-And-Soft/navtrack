@@ -452,14 +452,17 @@ public class W2jMessageHandler : BaseMessageHandler<W2jProtocol>
         // Calcular checksum
         byte checksum = CalculateChecksum(messageData);
 
-        // Aplicar escape
-        byte[] escapedData = EscapeMessage(messageData);
+        // Agregar checksum al mensaje ANTES de escapar
+        ms.WriteByte(checksum);
+        byte[] messageWithChecksum = ms.ToArray();
+
+        // Aplicar escape al mensaje completo (incluyendo checksum)
+        byte[] escapedData = EscapeMessage(messageWithChecksum);
 
         // Construir mensaje final con delimitadores
         using var finalMs = new System.IO.MemoryStream();
         finalMs.WriteByte(0x7E);
         finalMs.Write(escapedData, 0, escapedData.Length);
-        finalMs.WriteByte(checksum);
         finalMs.WriteByte(0x7E);
 
         return finalMs.ToArray();
