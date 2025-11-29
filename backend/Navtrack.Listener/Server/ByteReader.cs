@@ -76,27 +76,27 @@ public class ByteReader(byte[] bytes, string[] hex)
 
         if (typeof(T) == typeof(short))
         {
-            value = BitConverter.ToInt16(Get(2, count).Reverse().ToArray());
+            value = BitConverter.ToInt16(Get(i: 2, count: count).AsEnumerable().Reverse().ToArray());
         }
         else if (typeof(T) == typeof(int))
         {
-            value = BitConverter.ToInt32(Get(4, count).Reverse().ToArray());
+            value = BitConverter.ToInt32(Get(i: 4, count: count).AsEnumerable().Reverse().ToArray());
         }
         else if (typeof(T) == typeof(long))
         {
-            value = BitConverter.ToInt64(Get(8, count).Reverse().ToArray());
+            value = BitConverter.ToInt64(Get(i: 8, count: count).AsEnumerable().Reverse().ToArray());
         }
         else if (typeof(T) == typeof(double))
         {
-            value = BitConverter.ToDouble(Get(8, count).Reverse().ToArray());
+            value = BitConverter.ToDouble(Get(i: 8, count: count).AsEnumerable().Reverse().ToArray());
         }
         else if (typeof(T) == typeof(decimal))
         {
-            value = BitConverter.ToDouble(Get(16, count).Reverse().ToArray());
+            value = BitConverter.ToDouble(Get(i: 16, count: count).AsEnumerable().Reverse().ToArray());
         }
         else if (typeof(T) == typeof(float))
         {
-            value = BitConverter.ToSingle(Get(4, count).Reverse().ToArray());
+            value = BitConverter.ToSingle(Get(i: 4, count: count).AsEnumerable().Reverse().ToArray());
         }
 
         return (T)value;
@@ -104,7 +104,7 @@ public class ByteReader(byte[] bytes, string[] hex)
 
     public int GetMediumIntLe()
     {
-        List<byte> a = Get(3).Reverse().ToList();
+        List<byte> a = Get(3).AsEnumerable().Reverse().ToList();
         a.Add(0);
 
         return BitConverter.ToInt32(a.ToArray());

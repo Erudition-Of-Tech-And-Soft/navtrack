@@ -95,8 +95,8 @@ public static class JointechV2MessageHandler
     {
         List<byte> data = [];
 
-        data.AddRange(BitConverter.GetBytes(sequenceNumber).Reverse());
-        data.AddRange(BitConverter.GetBytes(messageId).Reverse());
+        data.AddRange(BitConverter.GetBytes(sequenceNumber).AsEnumerable().Reverse());
+        data.AddRange(BitConverter.GetBytes(messageId).AsEnumerable().Reverse());
         data.Add(result);
 
         MemoryStream stream = new();
@@ -110,7 +110,7 @@ public static class JointechV2MessageHandler
 
         bytes.AddRange(HexUtil.ConvertHexStringToByteArray(phoneNumberHex));
 
-        bytes.AddRange(BitConverter.GetBytes((short)0).Reverse());
+        bytes.AddRange(BitConverter.GetBytes((short)0).AsEnumerable().Reverse());
 
         bytes.AddRange(data);
 

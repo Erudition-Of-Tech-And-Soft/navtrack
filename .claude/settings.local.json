@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Read(//c/Users/edgar/PycharmProjects/Gps/**)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(dotnet build:*)",
+      "Bash(sort:*)"
     ],
     "deny": [],
     "ask": []
