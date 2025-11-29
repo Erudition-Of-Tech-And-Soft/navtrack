@@ -12,6 +12,7 @@ public static class AssetDocumentMapper
         {
             OrganizationId = ObjectId.Parse(source.OrganizationId),
             Name = source.Model.Name,
+            ChasisNumber = source.Model.ChasisNumber,
             CreatedDate = DateTime.UtcNow,
             CreatedBy = userId
         };

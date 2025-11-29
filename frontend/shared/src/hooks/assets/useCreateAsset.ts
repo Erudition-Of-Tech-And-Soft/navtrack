@@ -8,12 +8,14 @@ import { ObjectSchema, object, string } from "yup";
 
 export type CreateAssetFormValues = {
   name: string;
+  chasisNumber: string;
   deviceTypeId: string;
   serialNumber: string;
 };
 
 export const DefaultCreateAssetFormValues: CreateAssetFormValues = {
   name: "",
+  chasisNumber: "",
   deviceTypeId: "",
   serialNumber: ""
 };
@@ -37,6 +39,7 @@ export function useCreateAsset(props: UseCreateAssetProps) {
             organizationId: currentOrganization.data.id,
             data: {
               name: values.name,
+              chasisNumber: values.chasisNumber,
               serialNumber: values.serialNumber,
               deviceTypeId: values.deviceTypeId
             }
@@ -53,6 +56,7 @@ export function useCreateAsset(props: UseCreateAssetProps) {
 
   const validationSchema: ObjectSchema<CreateAssetFormValues> = object({
     name: string().required("generic.name.required"),
+    chasisNumber: string().required("generic.chasis-number.required"),
     deviceTypeId: string().required("generic.device-type.required"),
     serialNumber: string().required("generic.serial-number.required")
   }).defined();

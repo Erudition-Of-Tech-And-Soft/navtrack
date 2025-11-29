@@ -8,6 +8,9 @@ public class CreateAsset
     public string Name { get; set; }
 
     [Required]
+    public string ChasisNumber { get; set; }
+
+    [Required]
     public string DeviceTypeId { get; set; }
 
     [Required]

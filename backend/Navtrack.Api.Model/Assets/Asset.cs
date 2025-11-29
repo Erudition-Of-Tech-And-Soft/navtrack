@@ -11,7 +11,10 @@ public class Asset
 
     [Required]
     public string Name { get; set; }
-    
+
+    [Required]
+    public string ChasisNumber { get; set; }
+
     [Required]
     public string OrganizationId { get; set; }
 

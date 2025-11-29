@@ -13,12 +13,15 @@ public class AssetDocument : UpdatedAuditDocument
     [BsonElement("name")]
     public string Name { get; set; }
 
+    [BsonElement("chasisNumber")]
+    public string ChasisNumber { get; set; }
+
     [BsonElement("ownerId")]
     public ObjectId OwnerId { get; set; }
-    
+
     [BsonElement("organizationId")]
     public ObjectId OrganizationId { get; set; }
-    
+
     [BsonElement("device")]
     public AssetDeviceElement? Device { get; set; }
 

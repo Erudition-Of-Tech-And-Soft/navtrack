@@ -9,6 +9,8 @@ import type { AssetLastMessage } from "./assetLastMessage";
 import type { AssetLastPositionMessage } from "./assetLastPositionMessage";
 
 export interface Asset {
+  /** @minLength 1 */
+  chasisNumber: string;
   /** @nullable */
   device?: AssetDevice;
   /** @minLength 1 */

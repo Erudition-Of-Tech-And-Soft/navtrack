@@ -7,6 +7,8 @@
 
 export interface CreateAsset {
   /** @minLength 1 */
+  chasisNumber: string;
+  /** @minLength 1 */
   deviceTypeId: string;
   /** @minLength 1 */
   name: string;

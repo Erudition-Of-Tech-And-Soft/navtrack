@@ -8,6 +8,7 @@ import { mapErrors } from "@navtrack/shared/utils/formik";
 
 export type RenameAssetFormValues = {
   name?: string; // TODO: make required
+  chasisNumber: string;
 };
 
 export function useRenameAsset() {
@@ -23,7 +24,7 @@ export function useRenameAsset() {
       setShowSuccess(false);
       if (currentAsset.data) {
         renameAssetMutation.mutate(
-          { assetId: currentAsset.data?.id, data: { name: values.name } },
+          { assetId: currentAsset.data?.id, data: { name: values.name, chasisNumber: values.chasisNumber } },
           {
             onSuccess: () => {
               setShowSuccess(true);
@@ -39,8 +40,9 @@ export function useRenameAsset() {
 
   const intl = useIntl();
 
-  const validationSchema: ObjectSchema<{ name: string }> = object({
-    name: string().required(intl.formatMessage({ id: "generic.name.required" }))
+  const validationSchema: ObjectSchema<RenameAssetFormValues> = object({
+    name: string().required(intl.formatMessage({ id: "generic.name.required" })),
+    chasisNumber: string().required(intl.formatMessage({ id: "generic.chasis-number.required" }))
   }).defined();
 
   return {

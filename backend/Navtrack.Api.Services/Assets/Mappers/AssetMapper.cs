@@ -16,6 +16,7 @@ public static class AssetMapper
         model.Id = asset.Id.ToString();
         model.OrganizationId = asset.OrganizationId.ToString();
         model.Name = asset.Name;
+        model.ChasisNumber = asset.ChasisNumber;
         model.LastPositionMessage =
             asset.LastPositionMessage != null ? MessageMapper.Map(asset.LastPositionMessage) : null;
         model.LastMessage = asset.LastMessage != null ? MessageMapper.Map(asset.LastMessage) : null;

@@ -11,7 +11,7 @@ public interface IAssetRepository : IGenericRepository<AssetDocument>
 {
     Task<AssetDocument> Get(string serialNumber, int protocolPort);
     Task<bool> NameIsUsed(ObjectId organizationId, string name, ObjectId? assetId = null);
-    Task UpdateName(string assetId, string name);
+    Task UpdateAssetInfo(string assetId, string name, string chasisNumber);
     Task UpdateMessages(ObjectId assetId, DeviceMessageDocument lastMessage, DeviceMessageDocument? positionMessage);
     Task SetActiveDevice(ObjectId assetId, AssetDeviceElement assetDevice);
     Task<List<AssetDocument>> GetByTeamId(ObjectId teamId);

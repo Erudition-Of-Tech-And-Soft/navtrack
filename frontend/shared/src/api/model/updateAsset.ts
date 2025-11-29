@@ -6,5 +6,7 @@
  */
 
 export interface UpdateAsset {
+  /** @minLength 1 */
+  chasisNumber: string;
   name?: string;
 }

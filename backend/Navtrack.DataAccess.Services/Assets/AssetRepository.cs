@@ -43,9 +43,11 @@ public class AssetRepository(IRepository repository) : GenericRepository<AssetDo
             .AnyAsync(filter);
     }
 
-    public async Task UpdateName(string assetId, string name)
+    public async Task UpdateAssetInfo(string assetId, string name, string chasisNumber)
     {
-        UpdateDefinition<AssetDocument> update = Builders<AssetDocument>.Update.Set(x => x.Name, name);
+        UpdateDefinition<AssetDocument> update = Builders<AssetDocument>.Update
+            .Set(x => x.Name, name)
+            .Set(x => x.ChasisNumber, chasisNumber);
 
         await repository.GetCollection<AssetDocument>()
             .UpdateOneAsync(x => x.Id == ObjectId.Parse(assetId), update);

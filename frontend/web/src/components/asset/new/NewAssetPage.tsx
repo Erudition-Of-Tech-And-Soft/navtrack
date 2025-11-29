@@ -74,6 +74,11 @@ export function NewAssetPage() {
                       label="generic.name"
                       placeholder="assets.add.name.placeholder"
                     />
+                    <FormikTextInput
+                      name="chasisNumber"
+                      label="generic.chasis-number"
+                      placeholder="assets.add.chasis-number.placeholder"
+                    />
                     <FormikAutocomplete
                       name="deviceTypeId"
                       label="generic.device-type"
