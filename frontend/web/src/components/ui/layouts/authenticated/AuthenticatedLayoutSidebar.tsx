@@ -11,7 +11,7 @@ import { Button } from "../../button/Button";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { Icon } from "../../icon/Icon";
 import { faHdd } from "@fortawesome/free-regular-svg-icons";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Authorize } from "@navtrack/shared/components/authorize/Authorize";
 import { OrganizationUserRole } from "@navtrack/shared/api/model";
 
@@ -20,6 +20,7 @@ export function AuthenticatedLayoutSidebar() {
   const assetsQuery = useAssetsQuery({
     organizationId: currentOrganization.data?.id
   });
+  const [searchTerm, setSearchTerm] = useState("");
 
   const logoPath = useMemo(() => {
     if (currentOrganization.id) {
@@ -30,6 +31,19 @@ export function AuthenticatedLayoutSidebar() {
 
     return Paths.Home;
   }, [currentOrganization.id]);
+
+  const filteredAssets = useMemo(() => {
+    if (!assetsQuery.data?.items) return [];
+
+    if (!searchTerm.trim()) {
+      return assetsQuery.data.items;
+    }
+
+    const searchLower = searchTerm.toLowerCase().trim();
+    return assetsQuery.data.items.filter((asset) =>
+      asset.name.toLowerCase().includes(searchLower)
+    );
+  }, [assetsQuery.data?.items, searchTerm]);
 
   return (
     <div className="absolute bottom-0 top-0 flex w-64 flex-col">
@@ -60,6 +74,15 @@ export function AuthenticatedLayoutSidebar() {
           </Link>
         </Authorize>
       </div>
+      <div className="bg-gray-800 px-4 py-2">
+        <input
+          type="text"
+          placeholder="Search assets..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full rounded border border-gray-600 bg-gray-700 px-3 py-2 text-sm text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        />
+      </div>
       <div
         className="relative flex-1 overflow-y-scroll bg-gray-800 py-2"
         style={{
@@ -71,13 +94,17 @@ export function AuthenticatedLayoutSidebar() {
             <LoadingIndicator className="mt-2 text-gray-300" size="lg" />
           ) : (
             <>
-              {assetsQuery.data?.items.length ? (
-                assetsQuery.data?.items.map((asset) => (
+              {filteredAssets.length ? (
+                filteredAssets.map((asset) => (
                   <AuthenticatedLayoutSidebarItem
                     key={asset.id}
                     asset={asset}
                   />
                 ))
+              ) : searchTerm ? (
+                <div className="text-center text-sm text-white">
+                  <FormattedMessage id="sidebar.no-results" />
+                </div>
               ) : (
                 <div className="text-center text-sm text-white">
                   <FormattedMessage id="sidebar.no-assets" />

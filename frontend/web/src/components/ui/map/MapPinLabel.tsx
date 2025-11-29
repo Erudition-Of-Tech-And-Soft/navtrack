@@ -9,7 +9,8 @@ export function MapPinLabel(props: MapPinProps) {
   return (
     <MapCustomMarker
       coordinates={props.pin.coordinates}
-      follow={props.pin.follow}>
+      follow={props.pin.follow}
+      popupContent={props.pin.label}>
       <div
         className={classNames(
           "flex w-24 flex-col items-center",

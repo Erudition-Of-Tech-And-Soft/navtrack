@@ -3,7 +3,7 @@ import { renderToString } from "react-dom/server";
 import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { MapCenter } from "./MapCenter";
 import { LatLong } from "@navtrack/shared/api/model";
-import { Marker } from "react-leaflet";
+import { Marker, Popup } from "react-leaflet";
 import { createPortal } from "react-dom";
 
 type MapCustomMarkerProps = {
@@ -11,6 +11,7 @@ type MapCustomMarkerProps = {
   follow?: boolean;
   zIndexOffset?: number;
   children?: ReactNode;
+  popupContent?: string;
 };
 
 type MapCustomMarkerPosition = {
@@ -69,8 +70,15 @@ export function MapCustomMarker(props: MapCustomMarkerProps) {
         {divIcon !== undefined && (
           <Marker
             position={[props.coordinates.latitude, props.coordinates.longitude]}
-            icon={divIcon}
-          />
+            icon={divIcon}>
+            {props.popupContent && (
+              <Popup>
+                <div className="text-center font-semibold">
+                  {props.popupContent}
+                </div>
+              </Popup>
+            )}
+          </Marker>
         )}
         {div !== undefined &&
           createPortal(
