@@ -125,10 +125,8 @@ public class ConcoxMessageHandler : BaseMessageHandler<ConcoxProtocol>
     {
         string imei = Join(Empty, input.SubArray(GetIndex(4), GetIndex(12)));
 
-        if (imei.StartsWith("0"))
-        {
-            imei = imei[1..];
-        }
+        // Remove all leading zeros
+        imei = imei.TrimStart('0');
 
         return imei;
     }
