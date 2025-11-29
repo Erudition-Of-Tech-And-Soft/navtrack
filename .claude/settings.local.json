@@ -1,21 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "Read(//c/Users/edgar/PycharmProjects/Gps/**)",
-      "Bash(git add:*)",
-      "Bash(dotnet build:*)",
-      "Bash(sort:*)",
-      "Bash(mongosh:*)",
-      "Bash(mongo:*)",
-      "Bash(dotnet script:*)",
-      "Bash(dotnet new console:*)",
-      "Bash(dotnet add package:*)",
-      "Bash(dotnet run)",
-      "Bash(dotnet run:*)",
-      "Bash(pip install openpyxl)",
-      "Bash(python:*)",
-      "Bash(pip install:*)",
-      "Bash(iconv:*)"
+      "Bash(git commit -m \"$(cat <<''EOF''\nFix Concox/GT06 IMEI extraction with leading zeros\n\nFixed bug where IMEI with multiple leading zeros was not matching Asset serial number. Changed from removing only 1 leading zero to using TrimStart(''0'') to remove all leading zeros.\n\nThis was preventing GT06 devices from associating with their Assets when IMEI had format like 0000018404228323.\n\nChanges:\n- ConcoxMessageHandler.GetImei(): Replace single character removal with TrimStart(''0'')\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []
